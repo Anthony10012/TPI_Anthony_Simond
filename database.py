@@ -1,0 +1,38 @@
+"""
+ Project name: TPI_Kaizen_Classroom
+ File : database.py
+ Author : Anthony Simond
+ description: Manages database connections and executes SQL queries, including user authentication and data persistence
+ Date : 2026/04/29
+ last modified : 2026/04/29
+ Version : 1.0
+"""
+import mysql.connector
+from security import check_password
+
+def verify_login(email,password):
+    """
+    Verifies user credentials by checking the email in the database
+    and validating the hashed password.
+    :param email: the email address entered by the user
+    :param password: the plaintext password to verify
+    :return: A dictionary containing user data if successful, None otherwise.
+    """
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="kaizen_classroom",
+    )
+    cursor = conn.cursor(dictionary=True)
+
+    query = "SELECT * FROM users WHERE email = %s"
+    cursor.execute(query, (email,))
+    user = cursor.fetchone()
+
+    conn.close()
+
+    if user:
+        if check_password(password,user["password"]):
+            return user
+    return None
