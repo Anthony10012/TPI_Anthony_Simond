@@ -32,3 +32,33 @@ def get_students_for_teacher(teacher_id):
     conn.close()
     return students
 
+def save_follow_up(date,presence,reason_absence, content, observation, student_id,teacher_id):
+    """
+    Record the follow-up, including the reason for the absence if necessary.
+
+    :param date: Date of the session
+    :param presence: 1 if present, 0 if absent.
+    :param reason_absence: Text explaining the absence (can be None or “”)
+    :param content: Educational content
+    :param observation: Notes
+    :param student_id: Student ID
+    :param teacher_id: Teacher ID
+    :return: True if successful, False otherwise
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+        INSERT INTO `follow-ups` 
+        (session_date, is_present, reason_absence,educational_content, observations, Students_idStudents, Users_idUsers)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    
+    """
+    try :
+        cursor.execute(query, (date, presence,reason_absence, content, observation, student_id,teacher_id))
+        conn.commit()
+        return True
+    except Exception as e :
+        print(f"Erreur SQL : {e}")
+        return False
+    finally:
+        conn.close()
