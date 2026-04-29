@@ -9,6 +9,8 @@
 """
 
 import streamlit as st
+
+from database import verify_login
 from security import check_password
 
 
@@ -121,10 +123,11 @@ with col2:
 
         if submit:
             if email and password:
-                st.info("Tentative de connexion...")
-                # user = verify_login(email,password)
-                # if user:
-                #       st.session_state['auth']
-                #       st.rerun()
+                user = verify_login(email,password)
+                if user:
+                    st.session_state['auth'] = True
+                    st.session_state['user_info'] = user
+                    st.success(f"Bienvenue {user['firstname']} !")
+                    st.rerun()
             else:
-                st.error("Veuillez remplir tous les champs")
+                st.error("Email ou mot de passe invalide")
