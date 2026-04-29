@@ -2,7 +2,9 @@
  Project name: TPI_Kaizen_Classroom
  File : data_manager.py
  Author : Anthony Simond
- description:
+ description:  Data manager that consolidates CRUD (Create, Read) operations
+              for business features, including student management
+              by teacher and the recording of educational progress.
  Date : 2026/04/29
  last modified : 2026/04/29
  Version : 1.0
