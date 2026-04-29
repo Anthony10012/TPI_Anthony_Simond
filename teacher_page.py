@@ -56,7 +56,7 @@ def show_teacher_page():
                 content = st.text_area("Contenu pédagogique abordé *")
                 observations = st.text_area("Observations et remarques")
 
-                if st.button(" Enregistrer le suivi",type="primary"):
+                if st.button(" 💾 Enregistrer le suivi",type="primary"):
                     if is_present == 1 and not content:
                         st.error("Veuillez remplir le contenu pédagogique")
                     else:
