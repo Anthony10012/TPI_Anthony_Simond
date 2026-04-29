@@ -9,7 +9,8 @@
 """
 
 import streamlit as st
-from security import check_password
+
+from database import verify_login
 
 
 st.set_page_config(page_title="Connexion - Suivi Pédagogique",layout="centered",)
@@ -121,10 +122,11 @@ with col2:
 
         if submit:
             if email and password:
-                st.info("Tentative de connexion...")
-                # user = verify_login(email,password)
-                # if user:
-                #       st.session_state['auth']
-                #       st.rerun()
+                user = verify_login(email,password)
+                if user:
+                    st.session_state['auth'] = True
+                    st.session_state['user_info'] = user
+                    st.success(f"Bienvenue {user['firstname']} !")
+                    st.rerun()
             else:
-                st.error("Veuillez remplir tous les champs")
+                st.error("Email ou mot de passe invalide")

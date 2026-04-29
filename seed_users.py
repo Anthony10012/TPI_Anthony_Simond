@@ -1,0 +1,45 @@
+"""
+ Project name: TPI_Kaizen_Classroom
+ File : seed_users.py
+ Author : Anthony Simond
+ description: Script to populate the database with initial administrative and teacher accounts using secure password hashing.
+ Date : 2026/04/29
+ last modified : 2026/04/29
+ Version : 1.0
+"""
+
+import mysql.connector
+from security import hash_password
+
+def seed():
+    """
+    Populates the 'users' table with initial data.
+    Hashes passwords using Bcrypt before insertion to ensure database security.
+
+    :return: None
+    """
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="kaizen_classroom",
+    )
+    cursor = conn.cursor()
+
+    users = [
+        ("Simond","Anthony", "anthony.simond@eduvaud.ch", hash_password("admin123"), "Admin"),
+        ("Favre", "Raphael", "raphael.favre@eduvaud.ch", hash_password("fr123"), "Enseignant")
+    ]
+
+    query = "INSERT INTO users (lastname, firstname, email, password, role) VALUES (%s, %s, %s, %s, %s)"
+    try:
+        cursor.executemany(query, users)
+        conn.commit()
+        print(f"Succès :  {cursor.rowcount} utilisateurs crées avec hash Bcrypt ! ")
+    except Exception as e:
+        print(f"Erreur : {e}")
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    seed()
