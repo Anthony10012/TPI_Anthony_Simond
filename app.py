@@ -11,7 +11,6 @@
 import streamlit as st
 
 from database import verify_login
-from security import check_password
 
 
 st.set_page_config(page_title="Connexion - Suivi Pédagogique",layout="centered",)
