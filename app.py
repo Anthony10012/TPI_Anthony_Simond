@@ -66,20 +66,28 @@ st.markdown("""
     }
 
     /* Login Button */
-    div.stButton>button:first-child {
+    div[data-testid="stForm"] button {
         background-color: #5c5ce0 !important;
-        color: red !important;
-        width: 100%;
-        border-radius: 4px;
-        border: none;
-        height: 45px;
-        font-size: 18px;
-        font-weight: 500;
-        margin-top: 10px;
+        color: white !important;
+        border-radius: 4px !important;
     }
-    div.stButton>button:hover {
+
+    div[data-testid="stForm"] button:hover {
         background-color: #4a4ae2 !important;
-        color: red !important;
+        color: white !important;
+    }
+    
+
+    div[data-testid="stTextInput"] button {
+        background-color: transparent !important;
+        color: #666 !important; 
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    div[data-testid="stTextInput"] button:hover {
+        background-color: rgba(0,0,0,0.05) !important;
+        color: #333 !important;
     }
     </style>
 
