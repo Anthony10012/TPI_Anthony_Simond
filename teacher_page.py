@@ -9,7 +9,8 @@
 """
 import streamlit as st
 
-from data_manager import get_students_for_teacher,save_follow_up
+from data_manager import get_students_for_teacher, save_follow_up, get_teacher_follow_ups
+
 
 def show_teacher_page():
     user_info = st.session_state['user_info']
@@ -67,4 +68,41 @@ def show_teacher_page():
                             st.error("Erreur lors de l'enregistrement.")
 
     with tab_view:
-        st.write("Liste des suivis a venir")
+        st.subheader("Mes suivis")
+        teacher_id = st.session_state['user_info']['idUsers']
+
+
+        # --- Filter bar ---
+        col_f1, col_f2 = st.columns(2)
+
+        with col_f1:
+            liste_eleves = get_students_for_teacher(teacher_id)
+            noms_eleves = ["Tous les élèves"] + [f"{e['lastname']} {e['firstname']}" for e in liste_eleves]
+            filtre_nom = st.selectbox("Filtrer par élève",options=noms_eleves)
+
+        with col_f2:
+            filtre_date =  st.date_input("Filtrer par date",value=None)
+
+        # Retrieving the ID of the student selected in the query
+        id_sel = None
+        if filtre_nom != "Tous les élèves":
+            id_sel = next(e['idStudents'] for e in liste_eleves if f"{e['lastname']} {e['firstname']}" == filtre_nom)
+
+        suivis = get_teacher_follow_ups(teacher_id,id_sel,filtre_date)
+
+        if not suivis:
+            st.info("Aucun suivi trouvé pour ces critères.")
+        else:
+            # Display transformation
+            data_display = []
+            for s in suivis:
+                data_display.append({
+                    "Date": s['session_date'].strftime("%d/%m/%Y"),
+                    "Élève": f"{s['firstname']} {s['lastname']}",
+                    "Présence": "✅ Présent" if s['is_present'] else f"❌ Absent ({s['reason_absence']})",
+                    "Contenu": s['educational_content'],
+                    "Observations": s['observations']
+                })
+            # Table view
+            st.table(data_display)
+            st.caption(f"Total : {len(suivis)} suivi(s)")
