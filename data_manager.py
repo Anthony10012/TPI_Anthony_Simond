@@ -10,7 +10,7 @@
  Version : 1.0
 """
 from database import get_connection
-
+import streamlit as st
 
 def get_students_for_teacher(teacher_id):
     """
@@ -102,3 +102,15 @@ def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
     conn.close()
     return results
 
+def reset_form():
+    """
+    Resets the text fields in the tracking entry form.
+    This function clears the values stored in the session_state for
+    instructional content, comments, and reason for absence, in order to prepare
+    the form for new data entry.
+    :return: None
+    """
+    st.session_state["ta_content"] = ""
+    st.session_state["ta_obs"] = ""
+    if "ti_reason" in st.session_state:
+        st.session_state["ti_reason"] = ""
