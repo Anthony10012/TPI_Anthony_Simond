@@ -11,6 +11,7 @@
 import streamlit as st
 
 from database import verify_login
+from teacher_page import show_teacher_page
 
 
 st.set_page_config(page_title="Connexion - Suivi Pédagogique",layout="centered",)
@@ -97,36 +98,48 @@ st.markdown("""
 
 # --- Interface ---
 
-st.markdown("""
-        <div class="logo-container">
-            <div class="logo-circle">
-                <i class="fa-solid fa-graduation-cap"></i>
+if st.session_state.get('auth'):
+    role = st.session_state['user_info']['role']
+
+    if role == "Enseignant":
+        show_teacher_page()
+
+    elif role == "Admin":
+        st.title("Espace Administrateur")
+        if st.button("Logout"):
+            st.session_state.clear()
+            st.rerun()
+else:
+    st.markdown("""
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="login-title">Suivi Pédagogique</h1>', unsafe_allow_html=True)
-st.markdown('<p class="login-subtitle">Connectez vous à votre espace</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="login-title">Suivi Pédagogique</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="login-subtitle">Connectez vous à votre espace</p>', unsafe_allow_html=True)
 
 
-# Login Form
+    # Login Form
 
-col1,col2,col3 = st.columns([1,2,1])
+    col1,col2,col3 = st.columns([1,2,1])
 
-with col2:
-    with st.form("login_form",clear_on_submit=False):
-        email = st.text_input("Email *",placeholder="Email *", label_visibility="collapsed")
-        password = st.text_input("Mot de passe *",type="password",placeholder="Mot de passe *", label_visibility="collapsed")
+    with col2:
+        with st.form("login_form",clear_on_submit=False):
+            email = st.text_input("Email *",placeholder="Email *", label_visibility="collapsed")
+            password = st.text_input("Mot de passe *",type="password",placeholder="Mot de passe *", label_visibility="collapsed")
 
-        submit = st.form_submit_button("➔ Se connecter",use_container_width=True)
+            submit = st.form_submit_button("➔ Se connecter",use_container_width=True)
 
-        if submit:
-            if email and password:
-                user = verify_login(email,password)
-                if user:
-                    st.session_state['auth'] = True
-                    st.session_state['user_info'] = user
-                    st.success(f"Bienvenue {user['firstname']} !")
-                    st.rerun()
-            else:
-                st.error("Email ou mot de passe invalide")
+            if submit:
+                if email and password:
+                    user = verify_login(email,password)
+                    if user:
+                        st.session_state['auth'] = True
+                        st.session_state['user_info'] = user
+                        st.success(f"Bienvenue {user['firstname']} !")
+                        st.rerun()
+                else:
+                    st.error("Email ou mot de passe invalide")

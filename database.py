@@ -10,6 +10,17 @@
 import mysql.connector
 from security import check_password
 
+def get_connection():
+    """
+    Creates and returns a connection to the MySQL database.
+    """
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="kaizen_classroom",
+    )
+
 def verify_login(email,password):
     """
     Verifies user credentials by checking the email in the database
