@@ -64,3 +64,41 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
         return False
     finally:
         conn.close()
+
+
+def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
+    """
+    Retrieves the history of educational follow-ups created by a teacher.
+    Allows results to be filtered by student or date. The function uses
+    optional parameters to construct a dynamic SQL query.
+    :param teacher_id: ID of the logged-in teacher (foreign key).
+    :param student_id: (Optional) Student ID to filter the results.
+    :param date_filter: (Optional) Specific date in YYYY-MM-DD format.
+    :return: a list of records containing details of the sessions and the student's identity.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+    SELECT f.session_date , s.firstname, s.lastname, f.is_present, 
+           f.educational_content, f.observations, f.reason_absence
+    FROM `follow-ups` f 
+    JOIN students s ON f.Students_idStudents = s.idStudents 
+    WHERE f.Users_idUsers = %s 
+    """
+    params = [teacher_id]
+
+    if student_id:
+        query += " AND f.Students_idStudents = %s "
+        params.append(student_id)
+    if date_filter:
+        query += " AND f.session_date = %s "
+        params.append(date_filter)
+
+    query += " ORDER BY  f.session_date DESC "
+
+    cursor.execute(query, params)
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
