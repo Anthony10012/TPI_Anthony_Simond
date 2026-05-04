@@ -43,9 +43,10 @@ def show_teacher_page():
                 c1, c2 = st.columns(2)
                 with c1:
                     eleves_sel = st.selectbox("Élève *",options=list(dict_eleves.keys()))
-
+                    h_debut = st.time_input("Heure de début", value=None)
                 with c2:
                     date_seance = st.date_input("Date de la séance *")
+                    h_fin = st.time_input("Heure de fin",value=None)
 
                 presence = st.radio("Présence de l'élève *",["Présent","Absent"],horizontal=True)
                 is_present = 1 if presence == "Présent" else 0
@@ -61,7 +62,7 @@ def show_teacher_page():
                     if is_present == 1 and not content:
                         st.error("Veuillez remplir le contenu pédagogique")
                     else:
-                        success = save_follow_up(date_seance,is_present,reason,content,observations,dict_eleves[eleves_sel],teacher_id)
+                        success = save_follow_up(date_seance,is_present,reason,content,observations,dict_eleves[eleves_sel],teacher_id,h_debut,h_fin)
                         if success:
                             st.success("Suivi enregistré avec succès !")
                         else:
