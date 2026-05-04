@@ -10,7 +10,8 @@
  Version : 1.0
 """
 from database import get_connection
-import streamlit as st
+import uuid
+
 
 def get_students_for_teacher(teacher_id):
     """
@@ -34,7 +35,7 @@ def get_students_for_teacher(teacher_id):
     conn.close()
     return students
 
-def save_follow_up(date,presence,reason_absence, content, observation, student_id,teacher_id):
+def save_follow_up(date,presence,reason_absence, content, observation, student_id,teacher_id, h_debut, h_final):
     """
     Record the follow-up, including the reason for the absence if necessary.
 
@@ -45,18 +46,21 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
     :param observation: Notes
     :param student_id: Student ID
     :param teacher_id: Teacher ID
+    :param h_debut: start time of the session
+    :param h_final: end time of the session
     :return: True if successful, False otherwise
     """
+    tracking_number = str(uuid.uuid4())[:8].upper()
     conn = get_connection()
     cursor = conn.cursor()
     query = """
         INSERT INTO `follow-ups` 
-        (session_date, is_present, reason_absence,educational_content, observations, Students_idStudents, Users_idUsers)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (tracking_number,session_date, is_present, reason_absence,educational_content, observations, start_hour,end_hour, Students_idStudents, Users_idUsers)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     
     """
     try :
-        cursor.execute(query, (date, presence,reason_absence, content, observation, student_id,teacher_id))
+        cursor.execute(query, (tracking_number,date, presence,reason_absence, content, observation,h_debut,h_final, student_id,teacher_id))
         conn.commit()
         return True
     except Exception as e :
