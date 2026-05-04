@@ -12,6 +12,7 @@ import streamlit as st
 
 from database import verify_login
 from teacher_page import show_teacher_page
+from admin_page import show_admin_page
 
 
 st.set_page_config(page_title="Connexion - Suivi Pédagogique",layout="centered",)
@@ -105,10 +106,7 @@ if st.session_state.get('auth'):
         show_teacher_page()
 
     elif role == "Admin":
-        st.title("Espace Administrateur")
-        if st.button("Logout"):
-            st.session_state.clear()
-            st.rerun()
+        show_admin_page()
 else:
     st.markdown("""
             <div class="logo-container">
