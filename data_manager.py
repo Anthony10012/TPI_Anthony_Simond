@@ -101,3 +101,16 @@ def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
     results = cursor.fetchall()
     conn.close()
     return results
+
+
+def get_all_students():
+    """
+    Retrieve the list of all students.
+    :return: A list of dictionaries, where each dictionary contains ‘idStudents’, ‘firstname’, and ‘lastname’.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idStudents, firstname, lastname FROM students ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
