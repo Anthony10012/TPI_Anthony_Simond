@@ -114,3 +114,15 @@ def get_all_students():
     res = cursor.fetchall()
     conn.close()
     return res
+
+def get_all_teachers():
+    """
+    Retrieve the list of all teachers with the role of "Enseignant"
+    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’, and ‘lastname’ fields for teachers.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idUsers, firstname, lastname FROM users WHERE role = 'Enseignant' ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
