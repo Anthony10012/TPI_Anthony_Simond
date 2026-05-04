@@ -9,7 +9,7 @@
 """
 import streamlit as st
 
-from data_manager import save_follow_up, get_students_for_teacher
+from data_manager import save_follow_up,get_all_students
 
 
 def show_admin_page():
@@ -41,19 +41,17 @@ def show_admin_page():
 
     with tabs[1]:
         st.subheader("Saisie du suivi hebdomadaire")
-        teacher_id = user_info['idUsers']
-        liste_eleves = get_students_for_teacher(teacher_id)
+
+        liste_eleves = get_all_students()
 
         if not liste_eleves:
-            st.warning("Vous n'avez pas encore d'élèves attribués.")
+            st.warning("Aucun élève trouvé en base de données.")
         else:
             dict_eleves = {f"{e['lastname']} {e['firstname']}": e['idStudents'] for e in liste_eleves}
-
             with st.container(border=True):
                 c1, c2 = st.columns(2)
                 with c1:
                     eleves_sel = st.selectbox("Élève *", options=list(dict_eleves.keys()))
-
                 with c2:
                     date_seance = st.date_input("Date de la séance *")
 
@@ -71,8 +69,10 @@ def show_admin_page():
                     if is_present == 1 and not content:
                         st.error("Veuillez remplir le contenu pédagogique")
                     else:
+                        id_admin = user_info['idUsers']
+                        id_eleves_choisi = dict_eleves[eleves_sel]
                         success = save_follow_up(date_seance, is_present, reason, content, observations,
-                                                 dict_eleves[eleves_sel], teacher_id)
+                                                 id_eleves_choisi, id_admin)
                         if success:
                             st.success("Suivi enregistré avec succès !")
                         else:
