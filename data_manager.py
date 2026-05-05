@@ -9,8 +9,7 @@
  last modified : 2026/04/29
  Version : 1.0
 """
-import pandas as pd
-
+from streamlit import cursor
 from database import get_connection
 import uuid
 
@@ -136,14 +135,17 @@ def get_all_teachers():
 
 def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
     """
-    :param student_id:
-    :param teacher_id:
-    :param date_range:
-    :return:
+    Retrieves the list of educational progress reports from the database using optional filters.
+
+    :param student_id: Student ID to filter follow-ups
+    :param teacher_id: Teacher ID to filter follow-ups
+    :param date_range: A tuple or list containing two dates (start, end) for filtering by time period
+    :return: A list of tuples containing the tracking data.
     """
     conn = get_connection()
+    cursor = conn.cursor()
     query = """
-    SELECT f.session_date , s.lastname , u.lastname . f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour
+    SELECT f.session_date , s.lastname , u.lastname ,f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour
     FROM `follow-ups` f 
     JOIN students s ON f.Students_idStudents = s.idStudents 
     JOIN users u ON f.Users_idUsers = u.idUsers
@@ -156,6 +158,11 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
         query += " AND f.Students_idStudents = %s "
         params.append(student_id)
 
+    # Filter by teacher
+    if teacher_id:
+        query += " AND f.Users_idUsers = %s "
+        params.append(teacher_id)
+
     # Filter by date
     if date_range and len(date_range) == 2:
         query += " AND f.session_date BETWEEN %s AND %s "
@@ -163,6 +170,8 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
 
     query += " ORDER BY  f.session_date DESC "
 
-    df = pd.read_sql(query, conn , params = params)
+    cursor.execute(query, params)
+    data = cursor.fetchall()
     conn.close()
-    return df
+    return data
+
