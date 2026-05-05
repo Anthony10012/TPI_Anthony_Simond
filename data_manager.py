@@ -187,12 +187,9 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     conn.close()
     return data
 
-def get_teacher_stats(month_filter):
+def get_teacher_stats():
     """
     Calculates performance and activity statistics by teacher.
-    :param month_filter:A string representing the month (e.g., “April 2026”).
-                         Note: For now, the actual filtering still needs to be implemented
-                         in the WHERE clause.
     :return: List of dictionaries containing ‘name’, ‘nb_seances’, ‘nb_eleves’, and ‘total_hours’.
     """
     conn = get_connection()
@@ -216,3 +213,17 @@ def get_teacher_stats(month_filter):
     res = cursor.fetchall()
     conn.close()
     return res
+
+def get_available_months():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT DISTINCT DATE_FORMAT(session_date, '%m-%Y') as `value`,
+                    DATE_FORMAT(session_date, '%M-%Y') as label
+    FROM `follow-ups`
+    ORDER BY `value` DESC
+    """
+    cursor.execute(query)
+    res = cursor.fetchall()
+    conn.close()
+    return {row['label']: row['value'] for row in res}
