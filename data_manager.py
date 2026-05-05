@@ -9,6 +9,8 @@
  last modified : 2026/04/29
  Version : 1.0
 """
+import pandas as pd
+
 from database import get_connection
 import uuid
 
@@ -130,3 +132,37 @@ def get_all_teachers():
     res = cursor.fetchall()
     conn.close()
     return res
+
+
+def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
+    """
+    :param student_id:
+    :param teacher_id:
+    :param date_range:
+    :return:
+    """
+    conn = get_connection()
+    query = """
+    SELECT f.session_date , s.lastname , u.lastname . f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour
+    FROM `follow-ups` f 
+    JOIN students s ON f.Students_idStudents = s.idStudents 
+    JOIN users u ON f.Users_idUsers = u.idUsers
+    WHERE 1=1
+    """
+    params = []
+
+    # Filter by student
+    if student_id:
+        query += " AND f.Students_idStudents = %s "
+        params.append(student_id)
+
+    # Filter by date
+    if date_range and len(date_range) == 2:
+        query += " AND f.session_date BETWEEN %s AND %s "
+        params.extend([date_range[0], date_range[1]])
+
+    query += " ORDER BY  f.session_date DESC "
+
+    df = pd.read_sql(query, conn , params = params)
+    conn.close()
+    return df
