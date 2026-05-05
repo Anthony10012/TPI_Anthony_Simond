@@ -133,7 +133,7 @@ def get_all_teachers():
     return res
 
 
-def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
+def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_time=None, end_time=None):
     """
     Retrieves the list of educational progress reports from the database using optional filters.
 
@@ -152,6 +152,16 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None):
     WHERE 1=1
     """
     params = []
+
+    # Filter by start time
+    if start_time:
+        query += " AND f.start_hour >= %s "
+        params.append(start_time)
+
+    # Filter by end time
+    if end_time:
+        query += " AND f.end_hour <= %s "
+        params.append(end_time)
 
     # Filter by student
     if student_id:
