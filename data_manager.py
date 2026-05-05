@@ -205,7 +205,8 @@ def get_teacher_stats(month_filter):
         u.lastname as name,
         COUNT(f.`idFollow-ups`) as nb_seances,
         COUNT(DISTINCT f.Students_idStudents) as nb_eleves,
-        ROUND(SUM(TIME_TO_SEC(TIMEDIFF(f.end_hour, f.start_hour))/3600), 1) as total_hours
+        SUM(f.is_present) as nb_presences,
+        IFNULL(ROUND(SUM(TIME_TO_SEC(TIMEDIFF(f.end_hour, f.start_hour))/3600), 1),0) as total_hours
     FROM users u
     LEFT JOIN `follow-ups` f ON u.idUsers = f.Users_idUsers
     WHERE u.role = 'Enseignant'
