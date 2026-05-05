@@ -140,6 +140,8 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     :param student_id: Student ID to filter follow-ups
     :param teacher_id: Teacher ID to filter follow-ups
     :param date_range: A tuple or list containing two dates (start, end) for filtering by time period
+    :param start_time: (Optional) Start date in YYYY-MM-DD format.
+    :param end_time: (Optional) End date in YYYY-MM-DD format.
     :return: A list of tuples containing the tracking data.
     """
     conn = get_connection()
