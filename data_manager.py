@@ -6,11 +6,13 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/29
- Version : 1.0
+ last modified : 2026/04/05
+ Version : 1.1
 """
+from streamlit import cursor
 from database import get_connection
-import streamlit as st
+import uuid
+
 
 def get_students_for_teacher(teacher_id):
     """
@@ -34,7 +36,7 @@ def get_students_for_teacher(teacher_id):
     conn.close()
     return students
 
-def save_follow_up(date,presence,reason_absence, content, observation, student_id,teacher_id):
+def save_follow_up(date,presence,reason_absence, content, observation, student_id,teacher_id, h_debut, h_final):
     """
     Record the follow-up, including the reason for the absence if necessary.
 
@@ -45,18 +47,21 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
     :param observation: Notes
     :param student_id: Student ID
     :param teacher_id: Teacher ID
+    :param h_debut: start time of the session
+    :param h_final: end time of the session
     :return: True if successful, False otherwise
     """
+    tracking_number = str(uuid.uuid4())[:8].upper()
     conn = get_connection()
     cursor = conn.cursor()
     query = """
         INSERT INTO `follow-ups` 
-        (session_date, is_present, reason_absence,educational_content, observations, Students_idStudents, Users_idUsers)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (tracking_number,session_date, is_present, reason_absence,educational_content, observations, start_hour,end_hour, Students_idStudents, Users_idUsers)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     
     """
     try :
-        cursor.execute(query, (date, presence,reason_absence, content, observation, student_id,teacher_id))
+        cursor.execute(query, (tracking_number,date, presence,reason_absence, content, observation,h_debut,h_final, student_id,teacher_id))
         conn.commit()
         return True
     except Exception as e :
@@ -101,3 +106,84 @@ def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
     results = cursor.fetchall()
     conn.close()
     return results
+
+
+def get_all_students():
+    """
+    Retrieve the list of all students.
+    :return: A list of dictionaries, where each dictionary contains ‘idStudents’, ‘firstname’, and ‘lastname’.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idStudents, firstname, lastname FROM students ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+def get_all_teachers():
+    """
+    Retrieve the list of all teachers with the role of "Enseignant"
+    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’, and ‘lastname’ fields for teachers.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idUsers, firstname, lastname FROM users WHERE role = 'Enseignant' ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+
+def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_time=None, end_time=None):
+    """
+    Retrieves the list of educational progress reports from the database using optional filters.
+
+    :param student_id: Student ID to filter follow-ups
+    :param teacher_id: Teacher ID to filter follow-ups
+    :param date_range: A tuple or list containing two dates (start, end) for filtering by time period
+    :param start_time: (Optional) Start date in YYYY-MM-DD format.
+    :param end_time: (Optional) End date in YYYY-MM-DD format.
+    :return: A list of tuples containing the tracking data.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+    SELECT f.session_date , s.lastname , u.lastname ,f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour
+    FROM `follow-ups` f 
+    JOIN students s ON f.Students_idStudents = s.idStudents 
+    JOIN users u ON f.Users_idUsers = u.idUsers
+    WHERE 1=1
+    """
+    params = []
+
+    # Filter by start time
+    if start_time:
+        query += " AND f.start_hour >= %s "
+        params.append(start_time)
+
+    # Filter by end time
+    if end_time:
+        query += " AND f.end_hour <= %s "
+        params.append(end_time)
+
+    # Filter by student
+    if student_id:
+        query += " AND f.Students_idStudents = %s "
+        params.append(student_id)
+
+    # Filter by teacher
+    if teacher_id:
+        query += " AND f.Users_idUsers = %s "
+        params.append(teacher_id)
+
+    # Filter by date
+    if date_range and len(date_range) == 2:
+        query += " AND f.session_date BETWEEN %s AND %s "
+        params.extend([date_range[0], date_range[1]])
+
+    query += " ORDER BY  f.session_date DESC "
+
+    cursor.execute(query, params)
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
