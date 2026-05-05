@@ -52,7 +52,16 @@ def show_admin_page():
         total_followups = sum(row['nb_seances'] for row in stats_data)
         nb_teachers = len(stats_data)
         total_students = sum(row['nb_eleves'] for row in stats_data)
-        attendance_rate = "94%"
+
+        # Attendance Rate Calcul
+        total_presence = sum(row['nb_presences'] for row in stats_data if row['nb_presences'] is not None)
+
+        if total_followups > 0:
+            rate_value = (total_presence / total_followups) * 100
+            attendance_rate = (f"{rate_value:.1f}%")
+        else:
+            attendance_rate = "0%"
+
         # --- KPI DISPLAY ---
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
@@ -61,7 +70,7 @@ def show_admin_page():
         with kpi2:
             st.metric(label="Enseignants actifs",value=str(nb_teachers))
         with kpi3:
-            st.metric(label="Taux de présence",value=str(attendance_rate))
+            st.metric(label="Taux de présence",value=attendance_rate)
         with kpi4:
             st.metric(label="Élèves suivis",value=str(total_students))
 
