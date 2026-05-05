@@ -9,7 +9,7 @@
 """
 import streamlit as st
 
-from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers,get_teacher_stats
+from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers,get_teacher_stats,get_available_months
 
 
 def show_admin_page():
@@ -46,8 +46,12 @@ def show_admin_page():
     with tabs[0]:
         st.subheader("Statistiques et gestion")
 
-        month = "Avril 2026"
-        stats_data = get_teacher_stats(month_filter=month)
+        month_db = get_available_months()
+
+        if not month_db:
+            month_db = {"Aucune donnée": "00-0000"}
+
+        stats_data = get_teacher_stats()
         # Dynamic calcul
         total_followups = sum(row['nb_seances'] for row in stats_data)
         nb_teachers = len(stats_data)
@@ -79,11 +83,9 @@ def show_admin_page():
         with st.container(border=True):
             col_month, col_teacher = st.columns(2)
             with col_month:
-                st.selectbox("Mois",options=["Avril 2026","Mai 2026"])
+                st.selectbox("Mois",options=list(month_db.keys()))
             with col_teacher:
                 teacher_choice = st.selectbox("Teacher",options=["Tous les enseignants"] + list(teachers_options.keys()))
-
-
 
             if teacher_choice != "Tous les enseignants":
                 stats_data = [row for row in stats_data if row['name'] in teacher_choice]
