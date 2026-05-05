@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : admin_page.py
  Author : Anthony Simond
- description:
+ description: the admin interface page
  Date : 2026/05/04
- last modified : 2026/05/04
- Version : 1.0
+ last modified : 2026/05/05
+ Version : 1.1
 """
 import streamlit as st
 

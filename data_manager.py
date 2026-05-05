@@ -6,8 +6,8 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/29
- Version : 1.0
+ last modified : 2026/04/05
+ Version : 1.1
 """
 from streamlit import cursor
 from database import get_connection
