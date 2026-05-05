@@ -187,3 +187,31 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     conn.close()
     return data
 
+def get_teacher_stats(month_filter):
+    """
+    Calculates performance and activity statistics by teacher.
+    :param month_filter:A string representing the month (e.g., “April 2026”).
+                         Note: For now, the actual filtering still needs to be implemented
+                         in the WHERE clause.
+    :return: List of dictionaries containing ‘name’, ‘nb_seances’, ‘nb_eleves’, and ‘total_hours’.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Query that counts sessions and calculates duration# Query that counts sessions and calculates duration
+    # We use TIMEDIFF to calculate the duration between start_hour and end_hour
+    query = """
+    SELECT
+        u.lastname as name,
+        COUNT(f.`idFollow-ups`) as nb_seances,
+        COUNT(DISTINCT f.Students_idStudents) as nb_eleves,
+        ROUND(SUM(TIME_TO_SEC(TIMEDIFF(f.end_hour, f.start_hour))/3600), 1) as total_hours
+    FROM users u
+    LEFT JOIN `follow-ups` f ON u.idUsers = f.Users_idUsers
+    WHERE u.role = 'Enseignant'
+    GROUP BY u.idUsers
+    """
+    cursor.execute(query)
+    res = cursor.fetchall()
+    conn.close()
+    return res
