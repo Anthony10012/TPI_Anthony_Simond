@@ -9,12 +9,17 @@
 """
 import streamlit as st
 
-from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers
+from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers,get_teacher_stats,get_available_months
 
 
 def show_admin_page():
     user_info = st.session_state['user_info']
 
+    teachers = get_all_teachers()
+    teachers_options = {f"{t['lastname']} {t['firstname']}": t['idUsers'] for t in teachers}
+
+    students = get_all_students()
+    student_options = {f"{s['lastname']} {s['firstname']}": s['idStudents'] for s in students}
     # --- HEADER ROUGE (Style Admin) ---
     st.markdown("""
         <style>
@@ -38,6 +43,65 @@ def show_admin_page():
 
     tabs = st.tabs(["📊 STATISTIQUES", " + SAISIR UN SUIVI","🕒 TOUS LES SUIVIS","👥 GESTION CRUD","📋 AFFECTATIONS"])
 
+    with tabs[0]:
+        st.subheader("Statistiques et gestion")
+
+        month_db = get_available_months()
+
+        if not month_db:
+            month_db = {"Aucune donnée": "00-0000"}
+
+        stats_data = get_teacher_stats()
+        # Dynamic calcul
+        total_followups = sum(row['nb_seances'] for row in stats_data)
+        nb_teachers = len(stats_data)
+        total_students = sum(row['nb_eleves'] for row in stats_data)
+
+        # Attendance Rate Calcul
+        total_presence = sum(row['nb_presences'] for row in stats_data if row['nb_presences'] is not None)
+
+        if total_followups > 0:
+            rate_value = (total_presence / total_followups) * 100
+            attendance_rate = (f"{rate_value:.1f}%")
+        else:
+            attendance_rate = "0%"
+
+        # --- KPI DISPLAY ---
+        kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+
+        with kpi1:
+            st.metric(label="Suivis ce mois",value=str(total_followups))
+        with kpi2:
+            st.metric(label="Enseignants actifs",value=str(nb_teachers))
+        with kpi3:
+            st.metric(label="Taux de présence",value=attendance_rate)
+        with kpi4:
+            st.metric(label="Élèves suivis",value=str(total_students))
+
+        # --- DETAILED TABLE WITH FILTERS ---
+        st.markdown("### Décompte des périodes par enseignant")
+        with st.container(border=True):
+            col_month, col_teacher = st.columns(2)
+            with col_month:
+                st.selectbox("Mois",options=list(month_db.keys()))
+            with col_teacher:
+                teacher_choice = st.selectbox("Teacher",options=["Tous les enseignants"] + list(teachers_options.keys()))
+
+            if teacher_choice != "Tous les enseignants":
+                stats_data = [row for row in stats_data if row['name'] in teacher_choice]
+
+            header_stats = ["Enseignant","Nombre de séances","Élèves différents","Heures totales(h)"]
+
+            formatted_stats = []
+            for row in stats_data:
+                # We convert EVERY value to a string to avoid the Arrow conversion error
+                formatted_stats.append([
+                    str(row['name']),
+                    str(row['nb_seances']),
+                    str(row['nb_eleves']),
+                    f"{row['total_hours']}"
+                    ])
+            st.table([header_stats] + formatted_stats)
 
     with tabs[1]:
         st.subheader("Saisie du suivi hebdomadaire")
@@ -87,16 +151,11 @@ def show_admin_page():
         c1, c2 , c3 = st.columns(3)
 
         with c1:
-            # Retrieving students for the filter
-            students = get_all_students()
-            student_options = {f"{s['lastname']} {s['firstname']}": s['idStudents'] for s in students}
             sel_student = st.selectbox("Filtrer par élève",options=["Tous"] + list(student_options.keys()))
             id_student_filter = student_options[sel_student] if sel_student != "Tous" else None
 
 
         with c2:
-            teachers = get_all_teachers()
-            teachers_options = {f"{t['lastname']} {t['firstname']}": t['idUsers'] for t in teachers}
             sel_teacher = st.selectbox("Filtrer par enseignant", options=["Tous"] + list(teachers_options.keys()))
             id_teacher_filter = teachers_options[sel_teacher] if sel_teacher != "Tous" else None
 

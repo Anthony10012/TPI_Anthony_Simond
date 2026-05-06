@@ -187,3 +187,43 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     conn.close()
     return data
 
+def get_teacher_stats():
+    """
+    Calculates performance and activity statistics by teacher.
+    :return: List of dictionaries containing ‘name’, ‘nb_seances’, ‘nb_eleves’, and ‘total_hours’.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Query that counts sessions and calculates duration# Query that counts sessions and calculates duration
+    # We use TIMEDIFF to calculate the duration between start_hour and end_hour
+    query = """
+    SELECT
+        u.lastname as name,
+        COUNT(f.`idFollow-ups`) as nb_seances,
+        COUNT(DISTINCT f.Students_idStudents) as nb_eleves,
+        SUM(f.is_present) as nb_presences,
+        IFNULL(ROUND(SUM(TIME_TO_SEC(TIMEDIFF(f.end_hour, f.start_hour))/3600), 1),0) as total_hours
+    FROM users u
+    LEFT JOIN `follow-ups` f ON u.idUsers = f.Users_idUsers
+    WHERE u.role = 'Enseignant'
+    GROUP BY u.idUsers
+    """
+    cursor.execute(query)
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+def get_available_months():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+    SELECT DISTINCT DATE_FORMAT(session_date, '%m-%Y') as `value`,
+                    DATE_FORMAT(session_date, '%M-%Y') as label
+    FROM `follow-ups`
+    ORDER BY `value` DESC
+    """
+    cursor.execute(query)
+    res = cursor.fetchall()
+    conn.close()
+    return {row['label']: row['value'] for row in res}
