@@ -6,8 +6,8 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/05
- Version : 1.1
+ last modified : 2026/04/06
+ Version : 1.2
 """
 import bcrypt
 from streamlit import cursor
@@ -386,4 +386,26 @@ def update_teacher(id_user, lastname, firstname, email):
         return True
     except Exception as e :
         print(f"Error updating teacher:{e}")
+        return False
+
+def add_parents(lastname,firstname,phone_number,email):
+    """
+    Adds parents to the database.
+    :param lastname: lastname of the parent.
+    :param firstname: firstname of the parent.
+    :param phone_number: phone number of the parent.
+    :param email: email of the parent.
+    :return: True if successful, False otherwise.
+    """
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO parents (lastname, firstname, phone_number, email) VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (lastname, firstname, phone_number, email))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error adding parents:{e}")
         return False
