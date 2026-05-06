@@ -10,7 +10,7 @@
 import streamlit as st
 import datetime
 from data_manager import save_follow_up, get_all_students, get_all_follow_ups, get_all_teachers, get_teacher_stats, \
-    get_available_months, add_student,get_all_parents
+    get_available_months, add_student, get_all_parents, delete_student, update_student
 
 
 def show_admin_page():
@@ -255,7 +255,7 @@ def show_admin_page():
                 with st.form("form_add_student_clean",border=False):
                     full_name = st.text_input("Nom complet", placeholder="Ex: Jean Dupont")
 
-                    min_date = datetime.date(1900,1,1)
+                    min_date = datetime.date(1960,1,1)
                     max_date = datetime.date.today()
                     birth_date = st.date_input("Date de naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
 
@@ -290,18 +290,47 @@ def show_admin_page():
                         st.rerun()
             all_students = get_all_students()
 
-            header = ["Nom", "Date Naissance", "Parent", "Statut", "Actions"]
+            cols = st.columns([2, 1.5, 2, 1, 1.5])
+            cols[0].write("**Nom**")
+            cols[1].write("**Naissance**")
+            cols[2].write("**Parent**")
+            cols[3].write("**Statut**")
+            cols[4].write("**Actions**")
 
-            rows = []
+            st.markdown("---")
+
             for student in all_students:
-                date_str = student['birthdate'].strftime("%d/%m/%Y") if student['birthdate'] else "N/A"
-                statut = "✅ Actif" if student['is_active'] == 1 else "❌ Inactif"
+                c1, c2, c3, c4, c5 = st.columns([2, 1.5, 2, 1, 1.5])
 
-                rows.append([
-                    f"{student['lastname']} {student['firstname']}",
-                    date_str,
-                    student['parent_name'] if student['parent_name'] else "Aucun",
-                    statut,
-                    "📝 🗑️"
-                ])
-            st.table([header] + rows)
+                c1.write(f"{student['lastname']} {student['firstname']}")
+
+                date_str = student['birthdate'].strftime("%d/%m/%Y") if student['birthdate'] else "N/A"
+                c2.write(date_str)
+
+                c3.write(student['parent_name'] if student['parent_name'] else "Aucun")
+
+                statut = "✅ Actif" if student['is_active'] == 1 else "❌ Inactif"
+                c4.write(statut)
+
+                btn_edit,btn_delete = c5.columns(2)
+
+                with btn_edit:
+                    with st.popover("📝"):
+                        st.write(f"Modifier {student['firstname']}")
+                        with st.form(f"edit_form_{student['idStudents']}"):
+                            new_nom = st.text_input("Nom", value=student['lastname'])
+                            new_pre = st.text_input("Prénom", value=student['firstname'])
+                            new_date = st.date_input("Naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
+                            new_active = st.checkbox("Actif", value=bool(student['is_active']))
+
+                            if st.form_submit_button("Sauvegarder"):
+                                if update_student(student['idStudents'], new_nom, new_pre, new_date, int(new_active)):
+                                    st.success("Modifié !")
+                                    st.rerun()
+                with btn_delete:
+                    if st.button("🗑️",key=f"delete_{student['idStudents']}"):
+                        if delete_student(student['idStudents']):
+                            st.success("Élève supprimé")
+                            st.rerun()
+                        else:
+                            st.error("Erreur")
