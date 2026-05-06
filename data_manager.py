@@ -115,7 +115,14 @@ def get_all_students():
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idStudents, firstname, lastname FROM students ORDER BY lastname")
+    query = """
+    SELECT s.idStudents, s.firstname, s.lastname,s.birthdate,s.is_active,p.lastname as parent_name
+    FROM students s 
+    LEFT JOIN parents p ON s.Parents_idParents = p.idParents 
+    ORDER BY lastname
+    
+            """
+    cursor.execute(query)
     res = cursor.fetchall()
     conn.close()
     return res
@@ -227,3 +234,40 @@ def get_available_months():
     res = cursor.fetchall()
     conn.close()
     return {row['label']: row['value'] for row in res}
+
+
+def add_student(lastname,firstname,birthdate,parent_id):
+    """
+    Adds a new student to the database.
+    :param lastname: Lastname of the student.
+    :param firstname: Firstname of the student.
+    :param birthdate: Birthdate of the student.
+    :param parent_id: Parent ID of the student.
+    :return: True if the student was successfully added, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO students (lastname, firstname, birthdate,is_active, Parents_idParents)
+            VALUES (%s, %s, %s,1, %s)
+        """
+        cursor.execute(query, (lastname, firstname, birthdate,parent_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error adding student:{e}")
+        return False
+
+def get_all_parents():
+    """
+    Retrieves all parents of the student.
+    :return: A list of dictionaries, each containing 'idParents', 'lastname', and 'firstname'.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idParents ,lastname , firstname FROM parents ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
