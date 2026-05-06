@@ -388,7 +388,7 @@ def update_teacher(id_user, lastname, firstname, email):
         print(f"Error updating teacher:{e}")
         return False
 
-def add_parents(lastname,firstname,phone_number,email):
+def add_parent(lastname,firstname,phone_number,email):
     """
     Adds parents to the database.
     :param lastname: lastname of the parent.
@@ -408,4 +408,25 @@ def add_parents(lastname,firstname,phone_number,email):
         return True
     except Exception as e :
         print(f"Error adding parents:{e}")
+        return False
+
+def update_parent(lastname,firstname,phone_number,email):
+    """
+    Updates a parent to the database.
+    :param lastname:  lastname of the parent.
+    :param firstname:  firstname of the parent.
+    :param phone_number:  phone number of the parent.
+    :param email:  email of the parent.
+    :return:  True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "UPDATE parents SET lastname = %s, firstname = %s, phone_number = %s,email = %s WHERE idParents = %s"
+        cursor.execute(query, (lastname, firstname, phone_number,email))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating teacher:{e}")
         return False
