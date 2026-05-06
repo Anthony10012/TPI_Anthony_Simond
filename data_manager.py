@@ -271,3 +271,21 @@ def get_all_parents():
     res = cursor.fetchall()
     conn.close()
     return res
+
+def delete_student(id_student):
+    """
+    Deletes a student from the database.
+    :param id_student:  The id of the student to delete.
+    :return: True if successful, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM students WHERE idStudents = %s", (id_student,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error deleting student:{e}")
+        return False
+
