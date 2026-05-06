@@ -267,7 +267,7 @@ def get_all_parents():
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idParents ,lastname , firstname,email FROM parents ORDER BY lastname")
+    cursor.execute("SELECT idParents ,lastname , firstname,email,phone_number FROM parents ORDER BY lastname")
     res = cursor.fetchall()
     conn.close()
     return res
@@ -409,9 +409,10 @@ def add_parent(lastname,firstname,phone_number,email):
         print(f"Error adding parents:{e}")
         return False
 
-def update_parent(lastname,firstname,phone_number,email):
+def update_parent(id_parent,lastname,firstname,phone_number,email):
     """
     Updates a parent to the database.
+    :param id_parent: The id of the parent of the teacher.
     :param lastname:  lastname of the parent.
     :param firstname:  firstname of the parent.
     :param phone_number:  phone number of the parent.
@@ -422,7 +423,7 @@ def update_parent(lastname,firstname,phone_number,email):
         conn = get_connection()
         cursor = conn.cursor()
         query = "UPDATE parents SET lastname = %s, firstname = %s, phone_number = %s,email = %s WHERE idParents = %s"
-        cursor.execute(query, (lastname, firstname, phone_number,email))
+        cursor.execute(query, (lastname, firstname, phone_number,email,id_parent))
         conn.commit()
         conn.close()
         return True
