@@ -4,8 +4,8 @@
  Author : Anthony Simond
  description: the admin interface page
  Date : 2026/05/04
- last modified : 2026/05/05
- Version : 1.1
+ last modified : 2026/05/06
+ Version : 1.2
 """
 import streamlit as st
 import datetime
@@ -399,4 +399,48 @@ def show_admin_page():
                             st.success("Enseignant supprimé")
                             st.rerun()
                         else:
-                            st.error("Action impossible : cet utilisateur n'est pas un enseignant ou n'existe pas.")
+                           st.error("Action impossible : cet utilisateur n'est pas un enseignant ou n'existe pas.")
+
+        with sub_tab3:
+            with st.popover("+ Ajouter un parent", type="primary", use_container_width=False):
+                st.markdown("### Ajouter un parent")
+                with st.form("form_add_parents",border=False):
+                    full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
+                    email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    c_space, c_annuler, c_ajouter = st.columns([1, 1.5, 1.5])
+
+                    with c_annuler:
+                        if st.form_submit_button("ANNULER"):
+                            st.rerun()
+                    with c_ajouter:
+                        if st.form_submit_button("AJOUTER", type="primary"):
+                            if full_name and email and pwd:
+                                parts = full_name.split(" ", 1)
+                                firstname = parts[0]
+                                lastname = parts[1] if len(parts) > 1 else ""
+
+                                # Ici tu devrais normalement utiliser bcrypt pour hasher pwd_t
+                                if add_teacher(lastname, firstname, email,pwd):
+                                    st.success("Enseignant ajouté !")
+                                    st.rerun()
+                            else:
+                                st.error("Tous les champs sont obligatoires.")
+
+
+            teachers = get_all_teachers()
+
+            # Header
+            h_cols = st.columns([2, 3, 1.5])
+            h_cols[0].write("**Nom**")
+            h_cols[1].write("**Email**")
+            h_cols[2].write("**Actions**")
+            st.divider()
+
+            for teacher in teachers:
+                col1, col2, col3 = st.columns([2,3,1.5])
+                col1.write(f"{teacher['firstname']} {teacher['lastname'].upper()}")
+                col2.write(teacher['email'])
+
+                b_edit, b_del = col3.columns(2)
