@@ -4,13 +4,12 @@
  Author : Anthony Simond
  description: the admin interface page
  Date : 2026/05/04
- last modified : 2026/05/05
- Version : 1.1
+ last modified : 2026/05/06
+ Version : 1.2
 """
 import streamlit as st
-
-from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers,get_teacher_stats,get_available_months
-
+import datetime
+from data_manager import *
 
 def show_admin_page():
     user_info = st.session_state['user_info']
@@ -225,3 +224,244 @@ def show_admin_page():
 
             st.write(f"**Total: {len(data)} suivi (s)**")
 
+    with tabs[3]:
+        st.markdown("""
+            <style>
+            div.stButton > button[kind="primary"] {
+                background-color: #5D5FEF;
+                color: white;
+                border-radius: 8px;
+                border: none;
+                padding: 0.5rem 1rem;
+            }
+            /*  Mouse-over effect */
+            div.stButton > button[kind="primary"]:hover {
+                background-color: #4547d1;
+                color: white;
+                border: none;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+        st.header("Gestion des entités (CRUD)")
+
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["👥 ÉLÈVES", "🎓 ENSEIGNANTS", "👪 PARENTS"])
+
+        with sub_tab1:
+            with st.popover("+ Ajouter un élève",type="primary",use_container_width=False):
+                st.markdown("### Ajouter un élève")
+
+                with st.form("form_add_student_clean",border=False):
+                    full_name = st.text_input("Nom complet", placeholder="Ex: Jean Dupont")
+
+                    min_date = datetime.date(1960,1,1)
+                    max_date = datetime.date.today()
+                    birth_date = st.date_input("Date de naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
+
+                    parents = get_all_parents()
+                    parent_options = {f"{p['lastname']} {p['firstname']}": p['idParents'] for p in parents}
+                    parent_sel = st.selectbox("Parent responsable", options=list(parent_options.keys()))
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_space, col_annuler, col_ajouter = st.columns([0.5,1.5, 1.5])
+
+                    with col_annuler:
+                        cancel = st.form_submit_button("ANNULER")
+
+                    with col_ajouter:
+                        submit = st.form_submit_button("AJOUTER")
+
+                    if submit:
+                        if full_name and birth_date:
+                            # Logic for separating the last name and first name
+                            parts = full_name.split(" ", 1)
+                            prenom = parts[0]
+                            nom = parts[1] if len(parts) > 1 else ""
+
+                            p_id = parent_options[parent_sel]
+
+                            if add_student(nom, prenom, birth_date, p_id):
+                                st.success("Élève ajouté avec succès !")
+                                st.rerun()
+                        else:
+                            st.error("Le nom et la date de naissance sont obligatoires.")
+                    elif cancel:
+                        st.rerun()
+            all_students = get_all_students()
+
+            cols = st.columns([2, 1.5, 2, 1, 1.5])
+            cols[0].write("**Nom**")
+            cols[1].write("**Naissance**")
+            cols[2].write("**Parent**")
+            cols[3].write("**Statut**")
+            cols[4].write("**Actions**")
+
+            st.markdown("---")
+
+            for student in all_students:
+                c1, c2, c3, c4, c5 = st.columns([2, 1.5, 2, 1, 1.5])
+
+                c1.write(f"{student['lastname']} {student['firstname']}")
+
+                date_str = student['birthdate'].strftime("%d/%m/%Y") if student['birthdate'] else "N/A"
+                c2.write(date_str)
+
+                c3.write(student['parent_name'] if student['parent_name'] else "Aucun")
+
+                statut = "✅ Actif" if student['is_active'] == 1 else "❌ Inactif"
+                c4.write(statut)
+
+                btn_edit,btn_delete = c5.columns(2)
+
+                with btn_edit:
+                    with st.popover("📝"):
+                        st.write(f"Modifier {student['firstname']}")
+                        with st.form(f"edit_form_{student['idStudents']}"):
+                            new_nom = st.text_input("Nom", value=student['lastname'])
+                            new_pre = st.text_input("Prénom", value=student['firstname'])
+                            new_date = st.date_input("Naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
+                            new_active = st.checkbox("Actif", value=bool(student['is_active']))
+
+                            if st.form_submit_button("Sauvegarder"):
+                                if update_student(student['idStudents'], new_nom, new_pre, new_date, int(new_active)):
+                                    st.success("Modifié !")
+                                    st.rerun()
+                with btn_delete:
+                    if st.button("🗑️",key=f"delete_{student['idStudents']}"):
+                        if delete_student(student['idStudents']):
+                            st.success("Élève supprimé")
+                            st.rerun()
+                        else:
+                            st.error("Erreur")
+
+        with sub_tab2:
+            with st.popover("+ Ajouter un enseignant", type="primary", use_container_width=False):
+                st.markdown("### Ajouter un enseignant")
+                with st.form("form_add_teacher",border=False):
+                    full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
+                    email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
+                    # Pour le mot de passe au TPI, on devrait normalement le hasher
+                    pwd = st.text_input("Mot de passe temporaire", type="password")
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    c_space, c_annuler, c_ajouter = st.columns([1, 1.5, 1.5])
+
+                    with c_annuler:
+                        if st.form_submit_button("ANNULER"):
+                            st.rerun()
+                    with c_ajouter:
+                        if st.form_submit_button("AJOUTER", type="primary"):
+                            if full_name and email and pwd:
+                                parts = full_name.split(" ", 1)
+                                firstname = parts[0]
+                                lastname = parts[1] if len(parts) > 1 else ""
+
+                                # Ici tu devrais normalement utiliser bcrypt pour hasher pwd_t
+                                if add_teacher(lastname, firstname, email,pwd):
+                                    st.success("Enseignant ajouté !")
+                                    st.rerun()
+                            else:
+                                st.error("Tous les champs sont obligatoires.")
+
+
+            teachers = get_all_teachers()
+
+            # Header
+            h_cols = st.columns([2, 3, 1.5])
+            h_cols[0].write("**Nom**")
+            h_cols[1].write("**Email**")
+            h_cols[2].write("**Actions**")
+            st.divider()
+
+            for teacher in teachers:
+                col1, col2, col3 = st.columns([2,3,1.5])
+                col1.write(f"{teacher['firstname']} {teacher['lastname'].upper()}")
+                col2.write(teacher.get('email', 'N/A'))
+
+                b_edit, b_del = col3.columns(2)
+                with b_edit:
+                    with st.popover("📝"):
+                        st.write(f"Modifier {teacher['firstname']} {teacher['lastname']}")
+                        with st.form(f"edit_teacher_{teacher['idUsers']}",border=False):
+                            new_lastname = st.text_input("Nom", value=teacher['lastname'])
+                            new_firstname = st.text_input("Prénom", value=teacher['firstname'])
+                            new_email = st.text_input("Email", value=teacher['email'])
+
+                            if st.form_submit_button("Sauvegarder"):
+                                if update_teacher(teacher['idUsers'], new_lastname, new_firstname, new_email):
+                                    st.success("Modifié !")
+                                    st.rerun()
+                with b_del:
+                    if st.button("🗑️", key=f"del_{teacher['idUsers']}"):
+                        if delete_teacher(teacher['idUsers']):
+                            st.success("Enseignant supprimé")
+                            st.rerun()
+                        else:
+                           st.error("Action impossible : cet utilisateur n'est pas un enseignant ou n'existe pas.")
+
+        with sub_tab3:
+            with st.popover("+ Ajouter un parent", type="primary", use_container_width=False):
+                st.markdown("### Ajouter un parent")
+                with st.form("form_add_parent",border=False):
+                    full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
+                    email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
+                    phone = st.text_input("Téléphone",placeholder="+41 790000000")
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    c_space, c_annuler, c_ajouter = st.columns([1, 1.5, 1.5])
+
+                    with c_annuler:
+                        if st.form_submit_button("ANNULER"):
+                            st.rerun()
+                    with c_ajouter:
+                        if st.form_submit_button("AJOUTER", type="primary"):
+                            if full_name and email:
+                                parts = full_name.split(" ", 1)
+                                firstname = parts[0]
+                                lastname = parts[1] if len(parts) > 1 else ""
+
+
+                                if add_parent(lastname, firstname, phone,email):
+                                    st.success("Parent ajouté !")
+                                    st.rerun()
+                            else:
+                                st.error("Tous les champs sont obligatoires.")
+
+
+            parents_list = get_all_parents()
+
+            # Header
+            h_cols = st.columns([2, 2,2, 1.5])
+            h_cols[0].write("**Nom**")
+            h_cols[1].write("**Email**")
+            h_cols[2].write("**Téléphone**")
+            h_cols[3].write("**Actions**")
+            st.divider()
+
+            for parent in parents_list:
+                col1, col2, col3,col4 = st.columns([2, 2,2, 1.5])
+
+                col1.write(f"{parent['lastname'].upper()} {parent['firstname']}")
+                col2.write(parent.get('email','N/A')) # .get to avoid errors if the email is missing
+                col3.write(parent.get('phone_number','N/A'))
+                btn_edit, btn_del = col4.columns(2)
+
+                with btn_edit:
+                    with st.popover("📝"):
+                        with st.form(f"edit_parent_{parent['idParents']}",border=False):
+                            new_lastname = st.text_input("Nom",value=parent['lastname'])
+                            new_firstname = st.text_input("Prénom",value=parent['firstname'])
+                            new_email = st.text_input("Email",value=parent.get('email', ''))
+                            new_phone = st.text_input("Téléphone", value=parent.get('phone_number', ''))
+
+                            if st.form_submit_button("Sauvegarder",type="primary"):
+                                if update_parent(parent['idParents'], new_lastname, new_firstname,new_phone,new_email):
+                                    st.success("Modifié !")
+                                    st.rerun()
+
+                with btn_del:
+                    if st.button("🗑️",key=f"del_parent_{parent['idParents']}"):
+                        if delete_parent(parent['idParents']):
+                            st.success("Supprimé !")
+                            st.rerun()
+                        else:
+                            st.error("Erreur : Ce parent a probablement encore des élèves liés.")

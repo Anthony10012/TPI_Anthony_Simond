@@ -6,10 +6,10 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/05
- Version : 1.1
+ last modified : 2026/04/06
+ Version : 1.2
 """
-from streamlit import cursor
+import bcrypt
 from database import get_connection
 import uuid
 
@@ -115,7 +115,14 @@ def get_all_students():
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idStudents, firstname, lastname FROM students ORDER BY lastname")
+    query = """
+    SELECT s.idStudents, s.firstname, s.lastname,s.birthdate,s.is_active,p.lastname as parent_name
+    FROM students s 
+    LEFT JOIN parents p ON s.Parents_idParents = p.idParents 
+    ORDER BY lastname
+    
+            """
+    cursor.execute(query)
     res = cursor.fetchall()
     conn.close()
     return res
@@ -123,11 +130,11 @@ def get_all_students():
 def get_all_teachers():
     """
     Retrieve the list of all teachers with the role of "Enseignant"
-    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’, and ‘lastname’ fields for teachers.
+    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’,‘lastname’, and 'email'.
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idUsers, firstname, lastname FROM users WHERE role = 'Enseignant' ORDER BY lastname")
+    cursor.execute("SELECT idUsers, firstname, lastname, email FROM users WHERE role = 'Enseignant' ORDER BY lastname")
     res = cursor.fetchall()
     conn.close()
     return res
@@ -227,3 +234,217 @@ def get_available_months():
     res = cursor.fetchall()
     conn.close()
     return {row['label']: row['value'] for row in res}
+
+
+def add_student(lastname,firstname,birthdate,parent_id):
+    """
+    Adds a new student to the database.
+    :param lastname: Lastname of the student.
+    :param firstname: Firstname of the student.
+    :param birthdate: Birthdate of the student.
+    :param parent_id: Parent ID of the student.
+    :return: True if the student was successfully added, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO students (lastname, firstname, birthdate,is_active, Parents_idParents)
+            VALUES (%s, %s, %s,1, %s)
+        """
+        cursor.execute(query, (lastname, firstname, birthdate,parent_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error adding student:{e}")
+        return False
+
+def get_all_parents():
+    """
+    Retrieves all parents of the student.
+    :return: A list of dictionaries, each containing 'idParents', 'lastname','firstname', and 'email'.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idParents ,lastname , firstname,email,phone_number FROM parents ORDER BY lastname")
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+def delete_student(id_student):
+    """
+    Deletes a student from the database.
+    :param id_student:  The id of the student to delete.
+    :return: True if successful, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM students WHERE idStudents = %s", (id_student,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error deleting student:{e}")
+        return False
+
+def update_student(id_student, lastname, firstname, birthdate, is_active):
+    """
+    Updates a student from the database.
+    :param id_student: ID of the student to update.
+    :param lastname: Lastname of the student.
+    :param firstname: Firstname of the student.
+    :param birthdate: Birthdate of the student.
+    :param is_active: True if the student is active, False otherwise.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        UPDATE students
+        SET lastname = %s, firstname = %s, birthdate = %s, is_active = %s
+        WHERE idStudents = %s
+        """
+        cursor.execute(query, (lastname, firstname, birthdate, is_active, id_student))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating student:{e}")
+        return False
+
+
+def add_teacher(lastname,firstname,email,password_hash):
+    """
+    Adds a teacher with a hashed password to the database.
+    :param lastname:  Lastname of the teacher.
+    :param firstname:  Firstname of the teacher.
+    :param email:  Email of the teacher.
+    :param password_hash:  Password hashed of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try:
+
+        password_bytes = password_hash.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password_bytes, salt)
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO users (lastname, firstname, email, password,role)
+            VALUES (%s, %s, %s, %s,'Enseignant')
+        """
+        cursor.execute(query, (lastname, firstname, email, hashed_password.decode('utf-8')))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error hachage/insertion:{e}")
+        return False
+
+def delete_teacher(id_user):
+    """
+    Deletes a teacher from the database.
+    :param id_user:  The id of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "DELETE FROM users WHERE idUsers = %s AND role = 'Enseignant'"
+        cursor.execute(query, (id_user,))
+        conn.commit()
+
+        # Checking whether a line has actually been deleted
+        success = cursor.rowcount > 0
+        conn.close()
+        return success
+    except Exception as e :
+        print(f"Error deleting teacher:{e}")
+        return False
+
+def update_teacher(id_user, lastname, firstname, email):
+    """
+    Updates a teacher from the database.
+    :param id_user: The id of the teacher.
+    :param lastname:  Lastname of the teacher.
+    :param firstname:  Firstname of the teacher.
+    :param email:  Email of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "UPDATE users SET lastname = %s, firstname = %s, email = %s WHERE idUsers = %s"
+        cursor.execute(query, (lastname, firstname, email, id_user))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating teacher:{e}")
+        return False
+
+def add_parent(lastname,firstname,phone_number,email):
+    """
+    Adds parents to the database.
+    :param lastname: lastname of the parent.
+    :param firstname: firstname of the parent.
+    :param phone_number: phone number of the parent.
+    :param email: email of the parent.
+    :return: True if successful, False otherwise.
+    """
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO parents (lastname, firstname, phone_number, email) VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (lastname, firstname, phone_number, email))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error adding parents:{e}")
+        return False
+
+def update_parent(id_parent,lastname,firstname,phone_number,email):
+    """
+    Updates a parent to the database.
+    :param id_parent: The id of the parent of the teacher.
+    :param lastname:  lastname of the parent.
+    :param firstname:  firstname of the parent.
+    :param phone_number:  phone number of the parent.
+    :param email:  email of the parent.
+    :return:  True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "UPDATE parents SET lastname = %s, firstname = %s, phone_number = %s,email = %s WHERE idParents = %s"
+        cursor.execute(query, (lastname, firstname, phone_number,email,id_parent))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating parent:{e}")
+        return False
+
+def delete_parent(id_parent):
+    """
+    Deletes a parent from the database.
+    :param id_parent: The id of the parent to delete.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM parents WHERE idParents = %s",(id_parent,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        # If a student is related, MySQL will block the deletion (foreign key)
+        print(f"Error deleting parent:{e}")
+        return False
