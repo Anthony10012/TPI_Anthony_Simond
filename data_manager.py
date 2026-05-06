@@ -345,3 +345,24 @@ def add_teacher(lastname,firstname,email,password_hash):
     except Exception as e :
         print(f"Error hachage/insertion:{e}")
         return False
+
+def delete_teacher(id_user):
+    """
+    Deletes a teacher from the database.
+    :param id_user:  The id of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try :
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "DELETE FROM users WHERE idUsers = %s AND role = 'Enseignant'"
+        cursor.execute(query, (id_user,))
+        conn.commit()
+
+        # Checking whether a line has actually been deleted
+        success = cursor.rowcount > 0
+        conn.close()
+        return success
+    except Exception as e :
+        print(f"Error deleting teacher:{e}")
+        return False
