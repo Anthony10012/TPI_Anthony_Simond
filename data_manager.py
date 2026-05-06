@@ -430,3 +430,21 @@ def update_parent(lastname,firstname,phone_number,email):
     except Exception as e :
         print(f"Error updating teacher:{e}")
         return False
+
+def delete_parent(id_parent):
+    """
+    Deletes a parent from the database.
+    :param id_parent: The id of the parent to delete.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM parents WHERE idParents = %s",(id_parent,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        # If a student is related, MySQL will block the deletion (foreign key)
+        print(f"Error deleting parent:{e}")
+        return False
