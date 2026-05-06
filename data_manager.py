@@ -9,6 +9,7 @@
  last modified : 2026/04/05
  Version : 1.1
 """
+import bcrypt
 from streamlit import cursor
 from database import get_connection
 import uuid
@@ -318,7 +319,7 @@ def update_student(id_student, lastname, firstname, birthdate, is_active):
 
 def add_teacher(lastname,firstname,email,password_hash):
     """
-    Adds a teacher to the database.
+    Adds a teacher with a hashed password to the database.
     :param lastname:  Lastname of the teacher.
     :param firstname:  Firstname of the teacher.
     :param email:  Email of the teacher.
@@ -326,16 +327,21 @@ def add_teacher(lastname,firstname,email,password_hash):
     :return: True if successful, False otherwise.
     """
     try:
+
+        password_bytes = password_hash.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password_bytes, salt)
+
         conn = get_connection()
         cursor = conn.cursor()
         query = """
         INSERT INTO users (lastname, firstname, email, password,role)
             VALUES (%s, %s, %s, %s,'Enseignant')
         """
-        cursor.execute(query, (lastname, firstname, email, password_hash,))
+        cursor.execute(query, (lastname, firstname, email, hashed_password.decode('utf-8')))
         conn.commit()
         conn.close()
         return True
     except Exception as e :
-        print(f"Error adding teacher:{e}")
+        print(f"Error hachage/insertion:{e}")
         return False
