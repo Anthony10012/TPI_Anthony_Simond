@@ -366,3 +366,24 @@ def delete_teacher(id_user):
     except Exception as e :
         print(f"Error deleting teacher:{e}")
         return False
+
+def update_teacher(id_user, lastname, firstname, email):
+    """
+    Updates a teacher from the database.
+    :param id_user: The id of the teacher.
+    :param lastname:  Lastname of the teacher.
+    :param firstname:  Firstname of the teacher.
+    :param email:  Email of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "UPDATE users SET lastname = %s, firstname = %s, email = %s WHERE idUsers = %s"
+        cursor.execute(query, (lastname, firstname, email, id_user))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating teacher:{e}")
+        return False
