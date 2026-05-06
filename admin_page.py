@@ -9,10 +9,7 @@
 """
 import streamlit as st
 import datetime
-from data_manager import save_follow_up, get_all_students, get_all_follow_ups, get_all_teachers, get_teacher_stats, \
-    get_available_months, add_student, get_all_parents, delete_student, update_student, add_teacher, delete_teacher, \
-    update_teacher
-
+from data_manager import *
 
 def show_admin_page():
     user_info = st.session_state['user_info']
@@ -378,7 +375,7 @@ def show_admin_page():
             for teacher in teachers:
                 col1, col2, col3 = st.columns([2,3,1.5])
                 col1.write(f"{teacher['firstname']} {teacher['lastname'].upper()}")
-                col2.write(teacher['email'])
+                col2.write(teacher.get('email', 'N/A'))
 
                 b_edit, b_del = col3.columns(2)
                 with b_edit:
@@ -404,9 +401,10 @@ def show_admin_page():
         with sub_tab3:
             with st.popover("+ Ajouter un parent", type="primary", use_container_width=False):
                 st.markdown("### Ajouter un parent")
-                with st.form("form_add_parents",border=False):
+                with st.form("form_add_parent",border=False):
                     full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
                     email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
+                    phone = st.text_input("Téléphone",placeholder="+41 790000000")
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     c_space, c_annuler, c_ajouter = st.columns([1, 1.5, 1.5])
@@ -416,31 +414,54 @@ def show_admin_page():
                             st.rerun()
                     with c_ajouter:
                         if st.form_submit_button("AJOUTER", type="primary"):
-                            if full_name and email and pwd:
+                            if full_name and email:
                                 parts = full_name.split(" ", 1)
                                 firstname = parts[0]
                                 lastname = parts[1] if len(parts) > 1 else ""
 
-                                # Ici tu devrais normalement utiliser bcrypt pour hasher pwd_t
-                                if add_teacher(lastname, firstname, email,pwd):
-                                    st.success("Enseignant ajouté !")
+
+                                if add_parent(lastname, firstname, phone,email):
+                                    st.success("Parent ajouté !")
                                     st.rerun()
                             else:
                                 st.error("Tous les champs sont obligatoires.")
 
 
-            teachers = get_all_teachers()
+            parents_list = get_all_parents()
 
             # Header
-            h_cols = st.columns([2, 3, 1.5])
+            h_cols = st.columns([2, 2,2, 1.5])
             h_cols[0].write("**Nom**")
             h_cols[1].write("**Email**")
-            h_cols[2].write("**Actions**")
+            h_cols[2].write("**Téléphone**")
+            h_cols[3].write("**Actions**")
             st.divider()
 
-            for teacher in teachers:
-                col1, col2, col3 = st.columns([2,3,1.5])
-                col1.write(f"{teacher['firstname']} {teacher['lastname'].upper()}")
-                col2.write(teacher['email'])
+            for parent in parents_list:
+                col1, col2, col3,col4 = st.columns([2, 2,2, 1.5])
 
-                b_edit, b_del = col3.columns(2)
+                col1.write(f"{parent['lastname'].upper()} {parent['firstname']}")
+                col2.write(parent.get('email','N/A')) # .get to avoid errors if the email is missing
+                col3.write(parent.get('phone_number','N/A'))
+                btn_edit, btn_del = col4.columns(2)
+
+                with btn_edit:
+                    with st.popover("📝"):
+                        with st.form(f"edit_parent_{parent['idParents']}",border=False):
+                            new_lastname = st.text_input("Nom",value=parent['lastname'])
+                            new_firstname = st.text_input("Prénom",value=parent['firstname'])
+                            new_email = st.text_input("Email",value=parent.get('email', ''))
+                            new_phone = st.text_input("Téléphone", value=parent.get('phone_number', ''))
+
+                            if st.form_submit_button("Sauvegarder",type="primary"):
+                                if update_parent(parent['idParents'], new_lastname, new_firstname,new_phone,new_email):
+                                    st.success("Modifié !")
+                                    st.rerun()
+
+                with btn_del:
+                    if st.button("🗑️",key=f"del_parent_{parent['idParents']}"):
+                        if delete_parent(parent['idParents']):
+                            st.success("Supprimé !")
+                            st.rerun()
+                        else:
+                            st.error("Erreur : Ce parent a probablement encore des élèves liés.")
