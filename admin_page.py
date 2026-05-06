@@ -10,7 +10,8 @@
 import streamlit as st
 import datetime
 from data_manager import save_follow_up, get_all_students, get_all_follow_ups, get_all_teachers, get_teacher_stats, \
-    get_available_months, add_student, get_all_parents, delete_student, update_student, add_teacher, delete_teacher
+    get_available_months, add_student, get_all_parents, delete_student, update_student, add_teacher, delete_teacher, \
+    update_teacher
 
 
 def show_admin_page():
@@ -381,9 +382,19 @@ def show_admin_page():
 
                 b_edit, b_del = col3.columns(2)
                 with b_edit:
-                    st.button("📝", key=f"edit_t_{teacher['idUsers']}")
+                    with st.popover("📝"):
+                        st.write(f"Modifier {teacher['firstname']} {teacher['lastname']}")
+                        with st.form(f"edit_teacher_{teacher['idUsers']}",border=False):
+                            new_lastname = st.text_input("Nom", value=teacher['lastname'])
+                            new_firstname = st.text_input("Prénom", value=teacher['firstname'])
+                            new_email = st.text_input("Email", value=teacher['email'])
+
+                            if st.form_submit_button("Sauvegarder"):
+                                if update_teacher(teacher['idUsers'], new_lastname, new_firstname, new_email):
+                                    st.success("Modifié !")
+                                    st.rerun()
                 with b_del:
-                    if st.button("🗑️", key=f"delete_{teacher['idUsers']}"):
+                    if st.button("🗑️", key=f"del_{teacher['idUsers']}"):
                         if delete_teacher(teacher['idUsers']):
                             st.success("Enseignant supprimé")
                             st.rerun()
