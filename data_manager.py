@@ -10,7 +10,6 @@
  Version : 1.2
 """
 import bcrypt
-from streamlit import cursor
 from database import get_connection
 import uuid
 
@@ -135,7 +134,7 @@ def get_all_teachers():
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idUsers, firstname, lastname,email FROM users WHERE role = 'Enseignant' ORDER BY lastname")
+    cursor.execute("SELECT idUsers, firstname, lastname, email FROM users WHERE role = 'Enseignant' ORDER BY lastname")
     res = cursor.fetchall()
     conn.close()
     return res
@@ -264,11 +263,11 @@ def add_student(lastname,firstname,birthdate,parent_id):
 def get_all_parents():
     """
     Retrieves all parents of the student.
-    :return: A list of dictionaries, each containing 'idParents', 'lastname', and 'firstname'.
+    :return: A list of dictionaries, each containing 'idParents', 'lastname','firstname', and 'email'.
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idParents ,lastname , firstname FROM parents ORDER BY lastname")
+    cursor.execute("SELECT idParents ,lastname , firstname,email FROM parents ORDER BY lastname")
     res = cursor.fetchall()
     conn.close()
     return res
@@ -428,7 +427,7 @@ def update_parent(lastname,firstname,phone_number,email):
         conn.close()
         return True
     except Exception as e :
-        print(f"Error updating teacher:{e}")
+        print(f"Error updating parent:{e}")
         return False
 
 def delete_parent(id_parent):
