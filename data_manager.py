@@ -289,3 +289,28 @@ def delete_student(id_student):
         print(f"Error deleting student:{e}")
         return False
 
+def update_student(id_student, lastname, firstname, birthdate, is_active):
+    """
+    Updates a student from the database.
+    :param id_student: ID of the student to update.
+    :param lastname: Lastname of the student.
+    :param firstname: Firstname of the student.
+    :param birthdate: Birthdate of the student.
+    :param is_active: True if the student is active, False otherwise.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        UPDATE students
+        SET lastname = %s, firstname = %s, birthdate = %s, is_active = %s
+        WHERE idStudents = %s
+        """
+        cursor.execute(query, (lastname, firstname, birthdate, is_active, id_student))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error updating student:{e}")
+        return False
