@@ -8,8 +8,9 @@
  Version : 1.1
 """
 import streamlit as st
-
-from data_manager import save_follow_up,get_all_students, get_all_follow_ups,get_all_teachers,get_teacher_stats,get_available_months
+import datetime
+from data_manager import save_follow_up, get_all_students, get_all_follow_ups, get_all_teachers, get_teacher_stats, \
+    get_available_months, add_student,get_all_parents
 
 
 def show_admin_page():
@@ -225,3 +226,82 @@ def show_admin_page():
 
             st.write(f"**Total: {len(data)} suivi (s)**")
 
+    with tabs[3]:
+        st.markdown("""
+            <style>
+            div.stButton > button[kind="primary"] {
+                background-color: #5D5FEF;
+                color: white;
+                border-radius: 8px;
+                border: none;
+                padding: 0.5rem 1rem;
+            }
+            /*  Mouse-over effect */
+            div.stButton > button[kind="primary"]:hover {
+                background-color: #4547d1;
+                color: white;
+                border: none;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+        st.header("Gestion des entités (CRUD)")
+
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["👥 ÉLÈVES", "🎓 ENSEIGNANTS", "👪 PARENTS"])
+
+        with sub_tab1:
+            with st.popover("+ Ajouter un élève",type="primary",use_container_width=False):
+                st.markdown("### Ajouter un élève")
+
+                with st.form("form_add_student_clean",border=False):
+                    full_name = st.text_input("Nom complet", placeholder="Ex: Jean Dupont")
+
+                    min_date = datetime.date(1900,1,1)
+                    max_date = datetime.date.today()
+                    birth_date = st.date_input("Date de naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
+
+                    parents = get_all_parents()
+                    parent_options = {f"{p['lastname']} {p['firstname']}": p['idParents'] for p in parents}
+                    parent_sel = st.selectbox("Parent responsable", options=list(parent_options.keys()))
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_space, col_annuler, col_ajouter = st.columns([0.5,1.5, 1.5])
+
+                    with col_annuler:
+                        cancel = st.form_submit_button("ANNULER")
+
+                    with col_ajouter:
+                        submit = st.form_submit_button("AJOUTER")
+
+                    if submit:
+                        if full_name and birth_date:
+                            # Logic for separating the last name and first name
+                            parts = full_name.split(" ", 1)
+                            prenom = parts[0]
+                            nom = parts[1] if len(parts) > 1 else ""
+
+                            p_id = parent_options[parent_sel]
+
+                            if add_student(nom, prenom, birth_date, p_id):
+                                st.success("Élève ajouté avec succès !")
+                                st.rerun()
+                        else:
+                            st.error("Le nom et la date de naissance sont obligatoires.")
+                    elif cancel:
+                        st.rerun()
+            all_students = get_all_students()
+
+            header = ["Nom", "Date Naissance", "Parent", "Statut", "Actions"]
+
+            rows = []
+            for student in all_students:
+                date_str = student['birthdate'].strftime("%d/%m/%Y") if student['birthdate'] else "N/A"
+                statut = "✅ Actif" if student['is_active'] == 1 else "❌ Inactif"
+
+                rows.append([
+                    f"{student['lastname']} {student['firstname']}",
+                    date_str,
+                    student['parent_name'] if student['parent_name'] else "Aucun",
+                    statut,
+                    "📝 🗑️"
+                ])
+            st.table([header] + rows)
