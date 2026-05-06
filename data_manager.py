@@ -130,11 +130,11 @@ def get_all_students():
 def get_all_teachers():
     """
     Retrieve the list of all teachers with the role of "Enseignant"
-    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’, and ‘lastname’ fields for teachers.
+    :return: List of dictionaries containing the ‘idUsers’, ‘firstname’,‘lastname’, and 'email'.
     """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idUsers, firstname, lastname FROM users WHERE role = 'Enseignant' ORDER BY lastname")
+    cursor.execute("SELECT idUsers, firstname, lastname,email FROM users WHERE role = 'Enseignant' ORDER BY lastname")
     res = cursor.fetchall()
     conn.close()
     return res
@@ -313,4 +313,29 @@ def update_student(id_student, lastname, firstname, birthdate, is_active):
         return True
     except Exception as e :
         print(f"Error updating student:{e}")
+        return False
+
+
+def add_teacher(lastname,firstname,email,password_hash):
+    """
+    Adds a teacher to the database.
+    :param lastname:  Lastname of the teacher.
+    :param firstname:  Firstname of the teacher.
+    :param email:  Email of the teacher.
+    :param password_hash:  Password hashed of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+        INSERT INTO users (lastname, firstname, email, password,role)
+            VALUES (%s, %s, %s, %s,'Enseignant')
+        """
+        cursor.execute(query, (lastname, firstname, email, password_hash,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error adding teacher:{e}")
         return False
