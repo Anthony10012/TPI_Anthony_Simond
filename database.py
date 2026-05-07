@@ -8,17 +8,20 @@
  Version : 1.0
 """
 import mysql.connector
+import os
+from dotenv import load_dotenv
 from security import check_password
 
+load_dotenv()
 def get_connection():
     """
     Creates and returns a connection to the MySQL database.
     """
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="kaizen_classroom",
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
     )
 
 def verify_login(email,password):
@@ -30,10 +33,10 @@ def verify_login(email,password):
     :return: A dictionary containing user data if successful, None otherwise.
     """
     conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="kaizen_classroom",
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
     )
     cursor = conn.cursor(dictionary=True)
 
