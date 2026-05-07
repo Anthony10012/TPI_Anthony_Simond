@@ -10,7 +10,10 @@
 
 import mysql.connector
 from security import hash_password
+import  os
+from dotenv import load_dotenv
 
+load_dotenv()
 def seed():
     """
     Populates the 'users' table with initial data.
@@ -19,10 +22,10 @@ def seed():
     :return: None
     """
     conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="kaizen_classroom",
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_DATABASE"),
     )
     cursor = conn.cursor()
 
