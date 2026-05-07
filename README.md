@@ -37,11 +37,15 @@ Security: Login system with password hashing (BCrypt) and role management.
 3. Database Configuration
 
 
-    1.Import the Script_Create_DB.sql file into your MySQL management tool.The file is located in this folder : /database
+    1. Schema : Import the Script_Create_DB.sql file into your MySQL management tool.The file is located in this folder : /database
 
-    2.Check the credentials in the database.py and seed_users.py file (host, user, password, database).
+    2. Environment variables: 
     
-    3.Run the following script to create the test accounts
+    Copy the .env.example file and rename it to .env.
+
+    Open the .env file and enter your local credentials:
+    
+    3. Initialisation : Run the following script to create the test accounts
     `python seed_users.py`
 # Usage
 
