@@ -88,7 +88,7 @@ def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
     SELECT f.session_date , s.firstname, s.lastname, f.is_present, 
            f.educational_content, f.observations, f.reason_absence
     FROM `follow-ups` f 
-    JOIN students s ON f.Students_idStudents = s.idStudents 
+    INNER JOIN students s ON f.Students_idStudents = s.idStudents 
     WHERE f.Users_idUsers = %s 
     """
     params = [teacher_id]
