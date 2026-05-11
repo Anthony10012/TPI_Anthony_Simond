@@ -51,9 +51,15 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
     :param h_final: end time of the session
     :return: True if successful, False otherwise
     """
-    tracking_number = str(uuid.uuid4())[:8].upper()
     conn = get_connection()
     cursor = conn.cursor()
+
+    cursor.execute("SELECT MAX(tracking_number) FROM FROM `follow-ups`")
+    result = cursor.fetchone()
+
+    last_number = result[0] if result[0] is not None else 0
+    tracking_number = last_number + 1
+
     query = """
         INSERT INTO `follow-ups` 
         (tracking_number,session_date, is_present, reason_absence,educational_content, observations, start_hour,end_hour, Students_idStudents, Users_idUsers)
