@@ -468,3 +468,42 @@ def assign_student_to_teacher(student_id,teacher_id):
     except Exception as e :
         print(f"Error assigning student:{e}")
         return False
+
+def get_assignments_by_teacher():
+    """
+    Retrieve all teachers and the list of their students for the maps.
+    :return: dict: A dictionary where the key is the teacher's formatted name (e.g., “J. Dupont”)
+                   and the value is a list of students (a dictionary containing ‘id_student’ and ‘full_name’).
+                   Returns an empty dictionary if an error occurs
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT u.idUsers, u.firstname AS prof_fn, u.lastname AS prof_ln,
+               s.idStudents, s.firstname AS student_fn, s.lastname AS student_ln
+        FROM users u 
+        JOIN assignments a ON u.idUsers = a.Users_idUsers
+        JOIN students s ON a.Students_idStudents = s.idStudents
+        WHERE u.role = 'Enseignant'
+        ORDER BY u.lastname, s.lastname
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+
+        # Organizing data into a dictionary for Streamlit
+        assignments = {}
+        for row in rows:
+            prof_name = f"{row['prof_fn'][0]}. {row['prof_ln']}"
+            if prof_name not in assignments:
+                assignments[prof_name] = []
+
+            assignments[prof_name].append({
+                "id_student": row['idStudents'],
+                "full_name": f"{row['student_fn']} {row['student_ln']}"
+            })
+        return assignments
+    except Exception as e :
+        print(f"Error getting assignments:{e}")
+        return {}
