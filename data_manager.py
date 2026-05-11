@@ -507,3 +507,31 @@ def get_assignments_by_teacher():
     except Exception as e :
         print(f"Error getting assignments:{e}")
         return {}
+
+def remove_assignment(teacher_name,student_id):
+    """
+    Removes the link between a teacher and a student.
+
+    This function identifies the teacher by their formatted name (e.g., ‘A. Simond’)
+    and the student by their unique ID to delete the corresponding entry in
+    the ‘assignments’ join table.
+
+    :param teacher_name: str:  The formatted name of the teacher used in the interface.
+    :param student_id: Student ID.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+                DELETE FROM assignments 
+                WHERE Students_idStudents = %s 
+                AND Users_idUsers = (SELECT idUsers FROM users WHERE CONCAT(LEFT(firstname, 1), '. ', lastname) = %s LIMIT 1)
+                """
+        cursor.execute(query, (student_id,teacher_name))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error removing assignment:{e}")
+        return False
