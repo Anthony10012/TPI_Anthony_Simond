@@ -6,8 +6,8 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/06
- Version : 1.2
+ last modified : 2026/05/11
+ Version : 1.3
 """
 import bcrypt
 from database import get_connection
@@ -51,9 +51,15 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
     :param h_final: end time of the session
     :return: True if successful, False otherwise
     """
-    tracking_number = str(uuid.uuid4())[:8].upper()
     conn = get_connection()
     cursor = conn.cursor()
+
+    cursor.execute("SELECT MAX(tracking_number) FROM `follow-ups`")
+    result = cursor.fetchone()
+
+    last_number = result[0] if result[0] is not None else 0
+    tracking_number = last_number + 1
+
     query = """
         INSERT INTO `follow-ups` 
         (tracking_number,session_date, is_present, reason_absence,educational_content, observations, start_hour,end_hour, Students_idStudents, Users_idUsers)
@@ -88,7 +94,7 @@ def get_teacher_follow_ups(teacher_id,student_id=None,date_filter=None):
     SELECT f.session_date , s.firstname, s.lastname, f.is_present, 
            f.educational_content, f.observations, f.reason_absence
     FROM `follow-ups` f 
-    JOIN students s ON f.Students_idStudents = s.idStudents 
+    INNER JOIN students s ON f.Students_idStudents = s.idStudents 
     WHERE f.Users_idUsers = %s 
     """
     params = [teacher_id]
@@ -447,4 +453,91 @@ def delete_parent(id_parent):
     except Exception as e:
         # If a student is related, MySQL will block the deletion (foreign key)
         print(f"Error deleting parent:{e}")
+        return False
+
+def assign_student_to_teacher(student_id,teacher_id):
+    """
+    Assigns a student to a teacher.
+    :param student_id: The unique id of the student.
+    :param teacher_id: The unique id of the teacher.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        # We use IGNORE to avoid duplicates if the link already exists
+        query = "INSERT IGNORE INTO assignments (Students_idStudents,Users_idUsers) VALUES (%s,%s)"
+        cursor.execute(query, (student_id,teacher_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error assigning student:{e}")
+        return False
+
+def get_assignments_by_teacher():
+    """
+    Retrieve all teachers and the list of their students for the maps.
+    :return: dict: A dictionary where the key is the teacher's formatted name (e.g., “J. Dupont”)
+                   and the value is a list of students (a dictionary containing ‘id_student’ and ‘full_name’).
+                   Returns an empty dictionary if an error occurs
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = """
+        SELECT u.idUsers, u.firstname AS prof_fn, u.lastname AS prof_ln,
+               s.idStudents, s.firstname AS student_fn, s.lastname AS student_ln
+        FROM users u 
+        JOIN assignments a ON u.idUsers = a.Users_idUsers
+        JOIN students s ON a.Students_idStudents = s.idStudents
+        WHERE u.role = 'Enseignant'
+        ORDER BY u.lastname, s.lastname
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+
+        # Organizing data into a dictionary for Streamlit
+        assignments = {}
+        for row in rows:
+            prof_name = f"{row['prof_fn'][0]}. {row['prof_ln']}"
+            if prof_name not in assignments:
+                assignments[prof_name] = []
+
+            assignments[prof_name].append({
+                "id_student": row['idStudents'],
+                "full_name": f"{row['student_fn']} {row['student_ln']}"
+            })
+        return assignments
+    except Exception as e :
+        print(f"Error getting assignments:{e}")
+        return {}
+
+def remove_assignment(teacher_name,student_id):
+    """
+    Removes the link between a teacher and a student.
+
+    This function identifies the teacher by their formatted name (e.g., ‘A. Simond’)
+    and the student by their unique ID to delete the corresponding entry in
+    the ‘assignments’ join table.
+
+    :param teacher_name: str:  The formatted name of the teacher used in the interface.
+    :param student_id: Student ID.
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = """
+                DELETE FROM assignments 
+                WHERE Students_idStudents = %s 
+                AND Users_idUsers = (SELECT idUsers FROM users WHERE CONCAT(LEFT(firstname, 1), '. ', lastname) = %s LIMIT 1)
+                """
+        cursor.execute(query, (student_id,teacher_name))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error removing assignment:{e}")
         return False

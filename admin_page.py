@@ -4,8 +4,8 @@
  Author : Anthony Simond
  description: the admin interface page
  Date : 2026/05/04
- last modified : 2026/05/06
- Version : 1.2
+ last modified : 2026/05/11
+ Version : 1.3
 """
 import streamlit as st
 import datetime
@@ -465,3 +465,58 @@ def show_admin_page():
                             st.rerun()
                         else:
                             st.error("Erreur : Ce parent a probablement encore des élèves liés.")
+
+        with tabs[4]:
+            st.header("Attribution pédagogique")
+
+            # ADDITION FORM
+            with st.container(border=True):
+                st.markdown("#### 🔗 Nouvelle affectation")
+                c1 , c2, c3 = st.columns([2,2,1])
+
+                with c1:
+                    teacher_name = st.selectbox("Sélectionner l'enseignant",options=list(teachers_options.keys()))
+
+                with c2:
+                    student_name = st.selectbox("Sélectionner l'élève",options=list(student_options.keys()))
+
+                with c3:
+                    st.write(" ")  # Espacement
+                    st.write(" ")
+                    if st.button("➕ LIER", type="primary", use_container_width=True,key="btn_do_assign"):
+                        teacher_id = teachers_options[teacher_name]
+                        student_id = student_options[student_name]
+                        if assign_student_to_teacher(student_id,teacher_id):
+                            st.success("Lien créé !")
+                            st.rerun()
+                        else:
+                            st.error("Erreur ou lien déjà existant.")
+
+
+                st.markdown("---")
+
+                # MAP DISPLAY
+                assignments = get_assignments_by_teacher()
+
+                if not assignments:
+                    st.info("Aucune affectation n'a été enregistrée pour le moment.")
+                else:
+                    rows = list(assignments.items())
+                    for i in range(0, len(rows), 3):
+                        cols = st.columns(3)
+                        for j in range(3):
+                            if i + j < len(rows):
+                                prof_name, pupils = rows[i+j]
+                                with cols[j]:
+                                    with st.container(border=True):
+                                        st.markdown(f"##### 👤 {prof_name}")
+                                        st.caption(f"{len(pupils)} élève(s) suivi(s)")
+                                        st.write("")
+
+                                        for p in pupils:
+                                            # Student view with delete button
+                                            cell_name, cell_del = st.columns([0.8, 0.2])
+                                            cell_name.write(f"• {p['full_name']}")
+                                            if cell_del.button("🗑️", key=f"del_link_{prof_name}_{p['id_student']}"):
+                                                if remove_assignment(prof_name, p['id_student']):
+                                                    st.rerun()
