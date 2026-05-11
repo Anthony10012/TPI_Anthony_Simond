@@ -131,7 +131,14 @@ def show_admin_page():
                 observations = st.text_area("Observations et remarques")
 
                 if st.button(" 💾 Enregistrer le suivi", type="primary"):
-                    if is_present == 1 and not content:
+
+                    if h_debut is None or h_fin is None:
+                        st.error("Veuillez saisir l'heure de début et l'heure de fin.")
+
+                    elif h_debut >= h_fin:
+                        st.error("L'heure de fin doit être après l'heure de début !")
+
+                    elif is_present == 1 and not content:
                         st.error("Veuillez remplir le contenu pédagogique")
                     else:
                         id_admin = user_info['idUsers']
