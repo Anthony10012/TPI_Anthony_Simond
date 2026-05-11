@@ -159,7 +159,7 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-    SELECT f.session_date , s.lastname , u.lastname ,f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour
+    SELECT f.session_date , s.lastname , u.lastname ,f.is_present, f.educational_content, f.observations, f.start_hour, f.end_hour, u.role
     FROM `follow-ups` f 
     JOIN students s ON f.Students_idStudents = s.idStudents 
     JOIN users u ON f.Users_idUsers = u.idUsers
@@ -197,7 +197,16 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     cursor.execute(query, params)
     data = cursor.fetchall()
     conn.close()
-    return data
+
+    # Edit to add (Admin)
+    final_data = []
+    for row in data:
+        row_list = list(row)
+        if row_list[8] == 'Admin':
+            row_list[2] = f"{row_list[2]} (Admin)"
+
+        final_data.append(row_list[:8])
+    return final_data
 
 def get_teacher_stats():
     """
