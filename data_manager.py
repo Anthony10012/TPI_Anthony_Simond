@@ -54,7 +54,7 @@ def save_follow_up(date,presence,reason_absence, content, observation, student_i
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT MAX(tracking_number) FROM FROM `follow-ups`")
+    cursor.execute("SELECT MAX(tracking_number) FROM `follow-ups`")
     result = cursor.fetchone()
 
     last_number = result[0] if result[0] is not None else 0
