@@ -31,3 +31,18 @@ def test_password_verification_success():
 
     # Assert
     assert is_valid is True
+
+def test_password_verification_failure():
+    """
+    Verifies that an invalid password does not match its hash.
+    """
+    # Arrange
+    raw_password = "MonMotDePasse123"
+    wrong_password = "MauvaisMDP"
+    hashed = hash_password(raw_password)
+
+    #Act
+    is_valid = check_password(wrong_password, hashed)
+
+    # Assert
+    assert is_valid is False
