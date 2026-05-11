@@ -1,5 +1,3 @@
-from enum import verify
-
 import pytest
 from security import *
 
@@ -46,3 +44,17 @@ def test_password_verification_failure():
 
     # Assert
     assert is_valid is False
+
+def test_salting_produces_different_hashes():
+    """
+    Check that two hashes of the same password are different
+    """
+    # Arrange
+    password = "Identique123"
+
+    # Act
+    hash1 = hash_password(password)
+    hash2 = hash_password(password)
+
+    # Assert
+    assert hash1 != hash2
