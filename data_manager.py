@@ -458,8 +458,8 @@ def delete_parent(id_parent):
 def assign_student_to_teacher(student_id,teacher_id):
     """
     Assigns a student to a teacher.
-    :param student_id:
-    :param teacher_id:
+    :param student_id: The unique id of the student.
+    :param teacher_id: The unique id of the teacher.
     :return: True if successful, False otherwise.
     """
     try:
