@@ -11,7 +11,6 @@
 """
 import bcrypt
 from database import get_connection
-import uuid
 
 
 def get_students_for_teacher(teacher_id):
