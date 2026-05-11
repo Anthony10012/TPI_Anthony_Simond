@@ -2,3 +2,4 @@ bcrypt
 streamlit
 mysql-connector-python
 python-dotenv
+pytest
