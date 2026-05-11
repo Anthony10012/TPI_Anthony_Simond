@@ -6,8 +6,8 @@
               for business features, including student management
               by teacher and the recording of educational progress.
  Date : 2026/04/29
- last modified : 2026/04/06
- Version : 1.2
+ last modified : 2026/05/11
+ Version : 1.3
 """
 import bcrypt
 from database import get_connection
@@ -447,4 +447,24 @@ def delete_parent(id_parent):
     except Exception as e:
         # If a student is related, MySQL will block the deletion (foreign key)
         print(f"Error deleting parent:{e}")
+        return False
+
+def assign_student_to_teacher(student_id,teacher_id):
+    """
+    Assigns a student to a teacher.
+    :param student_id:
+    :param teacher_id:
+    :return: True if successful, False otherwise.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        # We use IGNORE to avoid duplicates if the link already exists
+        query = "INSERT IGNORE INTO assignments (Students_idStudents,Users_idUsers) VALUES (%s,%s)"
+        cursor.execute(query, (student_id,teacher_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e :
+        print(f"Error assigning student:{e}")
         return False
