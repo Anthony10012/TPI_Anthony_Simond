@@ -495,7 +495,6 @@ def show_admin_page():
                         student_id = student_options[student_name]
                         if assign_student_to_teacher(student_id,teacher_id):
                             st.success("Lien créé !")
-                            st.rerun()
                         else:
                             st.error("Erreur ou lien déjà existant.")
 
