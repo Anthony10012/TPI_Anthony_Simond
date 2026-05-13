@@ -2,50 +2,68 @@
 
 # Description
 
-Kaizen Classroom is an educational management application designed to facilitate student tracking among teachers, parents, and administrators. It allows:
+Kaizen Classroom is an educational management application designed to centralize and simplify student tracking. Developed as part of my Individual Practical Project (TPI), it enables seamless collaboration between the administration and the teaching staff.
 
-Administration: Comprehensive management (CRUD) of students, teachers, and parents.
+Administration: Full management (CRUD) of entities, real-time activity statistics, and assignment management.
 
-Teachers: Entering progress reports, managing attendance, and viewing history.
+Teachers: Quick entry of weekly progress reports, attendance management, and student history.
 
-Security: Login system with password hashing (BCrypt) and role management.
+Security: Secure authentication, password hashing (BCrypt), and role-based access control.
 
 # Technologies Used
 
 - **Language** : Python 3.13
 - **Interface** : Streamlit (Framework web)
-- **Data Base** : MySQL
+- **Data Base** : MySQL 8.0
 - **Security** : BCrypt
 - **Database Management** : MySQL Connector Python
+- **Dependency Manager** : pip
+
+# Project Structure
+```
+├── database/               # SQL scripts
+├── .env.example            # Template for environment variables
+├── login.py                # Application entry point
+├── data_manager.py         # CRUD Logic and SQL Queries
+├── admin_page.py           # Administrator Interface
+├── teacher_page.py         # Teacher Interface
+└── requirements.txt        # List of required Python libraries
+```
 
 # Setup and Execution
 
 **Prerequisites** 
 * Python 3.13
-* MySQL Installer
+* Local MySQL server (WAMP, XAMPP, or MySQL Installer)
 
-**Installation**
+**Installation Steps**
 
 1. Clone the repository
 
 `git clone https://github.com/Anthony10012/TPI_Anthony_Simond.git`
 
-2. Setup the project
+2. Install dependencies
 
 `pip install -r requirements.txt`
 
 3. Database Configuration
-
-
-    1. Schema : Import the Script_Create_DB.sql file into your MySQL management tool.The file is located in this folder : /database
-
-    2. Environment variables: 
     
-    Copy the .env.example file and rename it to .env.
+   3.1 **Schema :**
 
-    Open the .env file and enter your local credentials:
+    - Import the Script_Create_DB.sql file into your MySQL management tool.
+
+    - The file is located in the directory: /database.
+
+    3.2 **Environment variables :**
+
+    - Copy the .env.example file and rename it to .env.
     
-    3. Initialisation : Run the following script to create the test accounts
+    - Open the .env file and enter your local credentials (DB_HOST, DB_USER, etc.).
+
+    3.3 **Initialisation :**
+
+    - Run the following script to populate the database and create test accounts:
+
     `python seed_users.py`
 # Usage
 
