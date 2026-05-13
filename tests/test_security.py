@@ -1,4 +1,12 @@
-import pytest
+"""
+ Project name: TPI_Kaizen_Classroom
+ File : tests\test_security.py
+ Author : Anthony Simond
+ Description: Unit Test
+ Date : 2026/05/12
+ Last modified : 2026/05/13
+ Version : 1.2
+"""
 from security import *
 
 def test_hash_password_returns_string():
