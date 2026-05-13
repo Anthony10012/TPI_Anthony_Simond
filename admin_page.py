@@ -335,7 +335,7 @@ def show_admin_page():
                         with st.form(f"edit_form_{student['idStudents']}"):
                             new_nom = st.text_input("Nom", value=student['lastname'])
                             new_pre = st.text_input("Prénom", value=student['firstname'])
-                            new_date = st.date_input("Naissance", value=None, format="DD/MM/YYYY",min_value=min_date,max_value=max_date)
+                            new_date = st.date_input("Naissance", value=student['birthdate'],disabled=True)
                             new_active = st.checkbox("Actif", value=bool(student['is_active']))
 
                             if st.form_submit_button("Sauvegarder"):
