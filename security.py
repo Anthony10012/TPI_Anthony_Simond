@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : security.py
  Author : Anthony Simond
- description: Consilidates the application's security features, including password hashing and verification using the Bcrypt library
+ Description: Consilidates the application's security features, including password hashing and verification using the Bcrypt library
  Date : 2026/04/28
- last modified : 2026/04/28
- Version : 1.0
+ Last modified : 2026/05/13
+ Version : 1.1
 """
 import bcrypt
 

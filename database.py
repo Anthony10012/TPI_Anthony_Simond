@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : database.py
  Author : Anthony Simond
- description: Manages database connections and executes SQL queries, including user authentication and data persistence
+ Description: Manages database connections and executes SQL queries, including user authentication and data persistence
  Date : 2026/04/29
- last modified : 2026/05/07
- Version : 1.1
+ Last modified : 2026/05/13
+ Version : 1.2
 """
 import mysql.connector
 import os

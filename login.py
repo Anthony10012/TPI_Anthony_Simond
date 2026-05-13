@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : login.py
  Author : Anthony Simond
- description: Login page
+ Description: Login page
  Date : 2026/04/29
- last modified : 2026/04/29
- Version : 1.1
+ Last modified : 2026/05/13
+ Version : 1.2
 """
 
 import streamlit as st

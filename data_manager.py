@@ -2,12 +2,13 @@
  Project name: TPI_Kaizen_Classroom
  File : data_manager.py
  Author : Anthony Simond
- description:  Data manager that consolidates CRUD (Create, Read) operations
-              for business features, including student management
-              by teacher and the recording of educational progress.
+ Description: Central data manager handling full CRUD operations (Create, Read, Update, Delete)
+              and complex business logic. This module manages teacher-student assignments,
+              secure user authentication (Bcrypt), and generates aggregated pedagogical
+              statistics for administrative oversight.
  Date : 2026/04/29
- last modified : 2026/05/11
- Version : 1.3
+ last modified : 2026/05/13
+ Version : 1.4
 """
 import bcrypt
 from database import get_connection
@@ -152,8 +153,8 @@ def get_all_follow_ups(student_id=None,teacher_id=None,date_range=None, start_ti
     :param student_id: Student ID to filter follow-ups
     :param teacher_id: Teacher ID to filter follow-ups
     :param date_range: A tuple or list containing two dates (start, end) for filtering by time period
-    :param start_time: (Optional) Start date in YYYY-MM-DD format.
-    :param end_time: (Optional) End date in YYYY-MM-DD format.
+    :param start_time: Lower bound for the session start hour
+    :param end_time: Upper bound for the session end hour
     :return: A list of tuples containing the tracking data.
     """
     conn = get_connection()
@@ -236,6 +237,13 @@ def get_teacher_stats():
     return res
 
 def get_available_months():
+    """
+    Retrieves the list of unique months and years from the follow-up history.
+    Used to populate filter dropdowns in the administration dashboard.
+
+    :return: A dictionary where the key is the formatted label (e.g., 'May-2026')
+             and the value is the database filter value ('05-2026').
+    """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     query = """
@@ -341,9 +349,9 @@ def add_teacher(lastname,firstname,email,password_hash):
     """
     try:
 
-        password_bytes = password_hash.encode('utf-8')
+        raw_password = password_hash.encode('utf-8')
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password_bytes, salt)
+        hashed_password = bcrypt.hashpw(raw_password, salt)
 
         conn = get_connection()
         cursor = conn.cursor()

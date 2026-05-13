@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : teacher_page.py
  Author : Anthony Simond
- description:
+ Description: the teacher interface page
  Date : 2026/04/29
- last modified : 2026/04/29
- Version : 1.0
+ Last modified : 2026/05/13
+ Version : 1.1
 """
 import streamlit as st
 
@@ -13,6 +13,16 @@ from data_manager import get_students_for_teacher, save_follow_up, get_teacher_f
 
 
 def show_teacher_page():
+    """
+    Renders the teacher's dashboard interface.
+
+    this function manages:
+     - User authentication display and logout logic
+     - Weekly follow-up entry form
+     - Dynamic retrieval of students assigned to the connected teacher
+     - Historical view of follow-ups with filtering options (by student and date)
+    :return: None
+    """
     user_info = st.session_state['user_info']
 
 
@@ -26,7 +36,7 @@ def show_teacher_page():
             st.session_state.clear()
             st.rerun()
 
-    # --- CONTENU ---
+    # --- Content ---
     tab_create, tab_view = st.tabs(["+ SAISIR UN SUIVI"," MES SUIVIS"])
 
     with tab_create:
@@ -65,9 +75,6 @@ def show_teacher_page():
 
                     elif h_debut >= h_fin:
                         st.error("L'heure de fin doit être après l'heure de début !")
-
-                    elif is_present == 1 and not content:
-                        st.error("Veuillez remplir le contenu pédagogique")
 
                     elif is_present == 1 and not content:
                         st.error("Veuillez remplir le contenu pédagogique")

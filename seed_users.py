@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : seed_users.py
  Author : Anthony Simond
- description: Script to populate the database with initial administrative and teacher accounts using secure password hashing.
+ Description: Script to populate the database with initial administrative and teacher accounts using secure password hashing.
  Date : 2026/04/29
- last modified : 2026/05/07
- Version : 1.1
+ Last modified : 2026/05/13
+ Version : 1.2
 """
 
 import mysql.connector

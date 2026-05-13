@@ -2,16 +2,26 @@
  Project name: TPI_Kaizen_Classroom
  File : admin_page.py
  Author : Anthony Simond
- description: the admin interface page
+ Description: the admin interface page
  Date : 2026/05/04
- last modified : 2026/05/11
- Version : 1.3
+ Last modified : 2026/05/13
+ Version : 1.4
 """
 import streamlit as st
 import datetime
 from data_manager import *
 
 def show_admin_page():
+    """
+    Renders the  administrative dashboard.
+
+    this interface serves as the control center for the application, managing:
+     - Business Intelligence : Calculates and displays real-time KPIs(attendance rate,active teachers,global hours) and detailed statistical tables.
+     - Global Follow-up Oversight : Advanced multicriteria filtering system(by student,teacher,date range and time slots) to monitor all pedagogical activities
+     - Entity Management (CRUD) : Full lifecycle management for students,teachers and parents using interactive popovers and forms.
+     - Pedagogical Assignments: Logic for linking/unlinking students and teachers to define monitoring scopes.
+    :return: None
+    """
     user_info = st.session_state['user_info']
 
     teachers = get_all_teachers()
@@ -19,7 +29,7 @@ def show_admin_page():
 
     students = get_all_students()
     student_options = {f"{s['lastname']} {s['firstname']}": s['idStudents'] for s in students}
-    # --- HEADER ROUGE (Style Admin) ---
+    # --- RED HEADER  (Admin style) ---
     st.markdown("""
         <style>
             .admin-header {
@@ -61,7 +71,7 @@ def show_admin_page():
 
         if total_followups > 0:
             rate_value = (total_presence / total_followups) * 100
-            attendance_rate = (f"{rate_value:.1f}%")
+            attendance_rate = f"{rate_value:.1f}%"
         else:
             attendance_rate = "0%"
 
@@ -210,7 +220,7 @@ def show_admin_page():
                 new_row.append(str(row[1]))
                 new_row.append(str(row[2]))
 
-                # Presence
+                # Attendance
                 presence = "✅ Présent" if row[3] == 1 else "❌ Absent"
                 new_row.append(presence)
 
@@ -346,7 +356,6 @@ def show_admin_page():
                 with st.form("form_add_teacher",border=False):
                     full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
                     email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
-                    # Pour le mot de passe au TPI, on devrait normalement le hasher
                     pwd = st.text_input("Mot de passe temporaire", type="password")
 
                     st.markdown("<br>", unsafe_allow_html=True)
@@ -362,7 +371,7 @@ def show_admin_page():
                                 firstname = parts[0]
                                 lastname = parts[1] if len(parts) > 1 else ""
 
-                                # Ici tu devrais normalement utiliser bcrypt pour hasher pwd_t
+
                                 if add_teacher(lastname, firstname, email,pwd):
                                     st.success("Enseignant ajouté !")
                                     st.rerun()
@@ -488,7 +497,7 @@ def show_admin_page():
                     student_name = st.selectbox("Sélectionner l'élève",options=list(student_options.keys()))
 
                 with c3:
-                    st.write(" ")  # Espacement
+                    st.write(" ")
                     st.write(" ")
                     if st.button("➕ LIER", type="primary", use_container_width=True,key="btn_do_assign"):
                         teacher_id = teachers_options[teacher_name]
