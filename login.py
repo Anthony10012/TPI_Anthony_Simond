@@ -2,10 +2,10 @@
  Project name: TPI_Kaizen_Classroom
  File : login.py
  Author : Anthony Simond
- Description: Login page
+ Description: Login page with authentication logic and error handling
  Date : 2026/04/29
  Last modified : 2026/05/13
- Version : 1.2
+ Version : 1.3
 """
 
 import streamlit as st
@@ -139,5 +139,7 @@ else:
                         st.session_state['user_info'] = user
                         st.success(f"Bienvenue {user['firstname']} !")
                         st.rerun()
+                    else:
+                        st.error("Email ou mot de passe incorrect")
                 else:
-                    st.error("Email ou mot de passe invalide")
+                    st.warning("Veuillez remplir tous les champs")
