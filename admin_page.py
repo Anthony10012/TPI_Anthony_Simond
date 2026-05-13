@@ -8,6 +8,7 @@
  Version : 1.4
 """
 import streamlit as st
+import re
 import datetime
 from data_manager import *
 
@@ -420,7 +421,7 @@ def show_admin_page():
                 with st.form("form_add_parent",border=False):
                     full_name = st.text_input("Nom complet",placeholder="Prénom Nom")
                     email = st.text_input("Email", placeholder="exemple@eduvaud.ch")
-                    phone = st.text_input("Téléphone",placeholder="+41 790000000")
+                    phone = st.text_input("Téléphone")
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     c_space, c_annuler, c_ajouter = st.columns([1, 1.5, 1.5])
@@ -431,14 +432,18 @@ def show_admin_page():
                     with c_ajouter:
                         if st.form_submit_button("AJOUTER", type="primary"):
                             if full_name and email:
-                                parts = full_name.split(" ", 1)
-                                firstname = parts[0]
-                                lastname = parts[1] if len(parts) > 1 else ""
 
+                                if not re.match(r'^[0-9+\s]+',phone):
+                                    st.error("Le numéro de téléphone est invalide (chiffres, '+' et espaces uniquement).")
 
-                                if add_parent(lastname, firstname, phone,email):
-                                    st.success("Parent ajouté !")
-                                    st.rerun()
+                                else:
+                                    parts = full_name.split(" ", 1)
+                                    firstname = parts[0]
+                                    lastname = parts[1] if len(parts) > 1 else ""
+
+                                    if add_parent(lastname, firstname, phone,email):
+                                        st.success("Parent ajouté !")
+                                        st.rerun()
                             else:
                                 st.error("Tous les champs sont obligatoires.")
 
