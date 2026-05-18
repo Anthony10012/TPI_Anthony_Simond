@@ -368,14 +368,19 @@ def show_admin_page():
                     with c_ajouter:
                         if st.form_submit_button("AJOUTER", type="primary"):
                             if full_name and email and pwd:
-                                parts = full_name.split(" ", 1)
-                                firstname = parts[0]
-                                lastname = parts[1] if len(parts) > 1 else ""
 
+                                email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
-                                if add_teacher(lastname, firstname, email,pwd):
-                                    st.success("Enseignant ajouté !")
-                                    st.rerun()
+                                if not re.match(email_regex, email):
+                                    st.error("L'adresse email n'est pas valide.(Format attendu : exemple@domaine.com).")
+                                else:
+                                    parts = full_name.split(" ", 1)
+                                    firstname = parts[0]
+                                    lastname = parts[1] if len(parts) > 1 else ""
+
+                                    if add_teacher(lastname, firstname, email,pwd):
+                                        st.success("Enseignant ajouté !")
+                                        st.rerun()
                             else:
                                 st.error("Tous les champs sont obligatoires.")
 
@@ -404,9 +409,18 @@ def show_admin_page():
                             new_email = st.text_input("Email", value=teacher['email'])
 
                             if st.form_submit_button("Sauvegarder"):
-                                if update_teacher(teacher['idUsers'], new_lastname, new_firstname, new_email):
-                                    st.success("Modifié !")
-                                    st.rerun()
+                                if new_lastname and new_firstname and new_email:
+
+                                    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+                                    if not re.match(email_regex, new_email):
+                                        st.error("L'adresse email est invalide (Format attendu : exemple@domaine.com).")
+                                    else:
+                                        if update_teacher(teacher['idUsers'], new_lastname, new_firstname, new_email):
+                                            st.success("Modifié !")
+                                            st.rerun()
+                                else:
+                                    st.error("Tous les champs sont obligatoires.")
                 with b_del:
                     if st.button("🗑️", key=f"del_{teacher['idUsers']}"):
                         if delete_teacher(teacher['idUsers']):
@@ -433,9 +447,14 @@ def show_admin_page():
                         if st.form_submit_button("AJOUTER", type="primary"):
                             if full_name and email and phone:
 
+                                # Help with AI
+                                email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
                                 if not re.match(r'^[0-9+\s]+$',phone):
                                     st.error("Le numéro de téléphone est invalide (chiffres, '+' et espaces uniquement).")
 
+                                elif not re.match(email_regex,email):
+                                    st.error("L'adresse email n'est pas valide.(Format attendu : exemple@domaine.com).")
                                 else:
                                     parts = full_name.split(" ", 1)
                                     firstname = parts[0]
@@ -476,9 +495,14 @@ def show_admin_page():
 
                             if st.form_submit_button("Sauvegarder",type="primary"):
                                 if new_lastname and new_firstname and new_email and new_phone:
+
+                                    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
                                     if not re.match(r'^[0-9+\s]+$',new_phone):
                                         st.error("Le numéro de téléphone est invalide (chiffres, '+' et espaces uniquement).")
 
+                                    elif not re.match(email_regex,new_email):
+                                        st.error("L'adresse email n'est pas valide.(Format attendu : exemple@domaine.com).")
                                     else :
                                         if update_parent(parent['idParents'], new_lastname, new_firstname,new_phone,new_email):
                                             st.success("Modifié !")
