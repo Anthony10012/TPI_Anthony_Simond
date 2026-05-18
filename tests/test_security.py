@@ -12,6 +12,7 @@ from security import *
 def test_hash_password_returns_string():
     """
     Check that the function returns a string (not bytes).
+    :return: None
     """
     # Arrange
     password = "MonMotDePasse123"
@@ -27,6 +28,7 @@ def test_hash_password_returns_string():
 def test_password_verification_success():
     """
     Verifies that a valid password matches its hash.
+    :return: None
     """
     # Arrange
     raw_password = "Secret789!"
@@ -41,6 +43,7 @@ def test_password_verification_success():
 def test_password_verification_failure():
     """
     Verifies that an invalid password does not match its hash.
+    :return: None
     """
     # Arrange
     raw_password = "MonMotDePasse123"
@@ -55,7 +58,8 @@ def test_password_verification_failure():
 
 def test_salting_produces_different_hashes():
     """
-    Check that two hashes of the same password are different
+    Check that two hashes of the same password are different.
+    :return: None
     """
     # Arrange
     password = "Identique123"
