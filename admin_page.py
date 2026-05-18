@@ -431,9 +431,9 @@ def show_admin_page():
                             st.rerun()
                     with c_ajouter:
                         if st.form_submit_button("AJOUTER", type="primary"):
-                            if full_name and email:
+                            if full_name and email and phone:
 
-                                if not re.match(r'^[0-9+\s]+',phone):
+                                if not re.match(r'^[0-9+\s]+$',phone):
                                     st.error("Le numéro de téléphone est invalide (chiffres, '+' et espaces uniquement).")
 
                                 else:
@@ -475,9 +475,16 @@ def show_admin_page():
                             new_phone = st.text_input("Téléphone", value=parent.get('phone_number', ''))
 
                             if st.form_submit_button("Sauvegarder",type="primary"):
-                                if update_parent(parent['idParents'], new_lastname, new_firstname,new_phone,new_email):
-                                    st.success("Modifié !")
-                                    st.rerun()
+                                if new_lastname and new_firstname and new_email and new_phone:
+                                    if not re.match(r'^[0-9+\s]+$',new_phone):
+                                        st.error("Le numéro de téléphone est invalide (chiffres, '+' et espaces uniquement).")
+
+                                    else :
+                                        if update_parent(parent['idParents'], new_lastname, new_firstname,new_phone,new_email):
+                                            st.success("Modifié !")
+                                            st.rerun()
+                                else:
+                                    st.error("Tous les champs sont obligatoires.")
 
                 with btn_del:
                     if st.button("🗑️",key=f"del_parent_{parent['idParents']}"):
