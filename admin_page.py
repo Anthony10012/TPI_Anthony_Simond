@@ -116,7 +116,10 @@ def show_admin_page():
     with tabs[1]:
         st.subheader("Saisie du suivi hebdomadaire")
 
-        liste_eleves = get_all_students()
+        liste_tous_eleves = get_all_students()
+
+        # Help with AI
+        liste_eleves = [eleve for eleve in liste_tous_eleves if eleve.get('is_active') == 1]
 
         if not liste_eleves:
             st.warning("Aucun élève trouvé en base de données.")
