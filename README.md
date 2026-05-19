@@ -14,7 +14,7 @@ Security: Secure authentication, password hashing (BCrypt), and role-based acces
 
 - **Language** : Python 3.13
 - **Interface** : Streamlit (Framework web)
-- **Data Base** : MySQL 8.0
+- **DataBase** : MySQL 8.0
 - **Security** : BCrypt
 - **Database Management** : MySQL Connector Python
 - **Dependency Manager** : pip
@@ -25,6 +25,9 @@ Security: Secure authentication, password hashing (BCrypt), and role-based acces
 ├── .env.example            # Template for environment variables
 ├── login.py                # Application entry point
 ├── data_manager.py         # CRUD Logic and SQL Queries
+├── database.py             # Configuring the MySQL connection and managing the session
+├── security.py             # Security logic (password hashing and verification using Bcrypt)
+├── seed_users.py           # Utility script for initializing and injecting test data (Seeding)
 ├── admin_page.py           # Administrator Interface
 ├── teacher_page.py         # Teacher Interface
 └── requirements.txt        # List of required Python libraries
@@ -38,9 +41,12 @@ Security: Secure authentication, password hashing (BCrypt), and role-based acces
 
 **Installation Steps**
 
-1. Clone the repository
+1. Get the sources
 
-`git clone https://github.com/Anthony10012/TPI_Anthony_Simond.git`
+    Option A : Clone the repository
+    `git clone https://github.com/Anthony10012/TPI_Anthony_Simond.git`
+    Option B : Extract the provided project ZIP archive and open the terminal in the root folder.
+
 
 2. Install dependencies
 
