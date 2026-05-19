@@ -37,7 +37,12 @@ Security: Secure authentication, password hashing (BCrypt), and role-based acces
 
 **Prerequisites** 
 * Python 3.13
-* Local MySQL server (WAMP, XAMPP, or MySQL Installer)
+* Local MySQL server:
+* * **Windows:** WAMP, XAMPP, or MySQL Installer
+* * **Mac:** MAMP, XAMPP, or Homebrew (`brew install mysql`)
+
+
+*(Note for Mac users: Depending on your environment, you might need to use `python3` and `pip3` instead of `python` and `pip` for the following commands).*
 
 **Installation Steps**
 
